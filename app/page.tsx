@@ -66,13 +66,8 @@ export default function Home() {
       </header>
 
       <section className="hero" id="top">
-        <div className="hero-kicker"><span className="pulse" /> BUILDING IN PUBLIC · SEOUL</div>
-        <h1>호기심을<br /><span>작동하는 것</span>으로.</h1>
-        <div className="hero-bottom">
-          <p>AI 검색과 자동화 서비스를 만들고, 보안·컴퓨터 비전·강화학습을 연구합니다. 아이디어를 코드와 인터페이스로 연결하고, 실험 결과와 한계를 함께 기록합니다.</p>
-          <div className="index-note"><span>PORTFOLIO / UPDATED 2026.10.20</span><span>2023.11 — 2026.10</span></div>
-        </div>
-        <div className="hero-rule"><span>SCROLL TO EXPLORE</span></div>
+        <h1>프로젝트와 연구 기록</h1>
+        <p className="hero-date">IlleJiViN · 2026.10</p>
       </section>
 
       <section className="section profile-section" id="profile">
