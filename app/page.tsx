@@ -21,7 +21,6 @@ const projects = [
   { year: "2026.07", name: "spotsync-crawler", type: "AI SEARCH · RAG", summary: "NER, BGE-M3, ColBERT 재순위와 공간 검색을 결합하고 평가 케이스까지 확장한 SpotSync 통합본.", detail: "ColBERT · PostGIS · React · evaluation", status: "PRIVATE" },
   { year: "2026.07", name: "Trot_MV_Automation", type: "VIDEO · PROTOTYPE", summary: "자막을 기준으로 장면을 구성하는 트로트 뮤직비디오 자동화의 초기 웹 프로토타입.", detail: "Python · SRT · web UI", status: "PRIVATE" },
   { year: "2026.07", name: "semvid", type: "AI AUTOMATION · VIDEO", summary: "자막 보정, 영상 RAG 검색, FFmpeg 렌더링과 결과 전송을 연결한 MV 자동화 워크스테이션.", detail: "Whisper · Gemini · FFmpeg · Telegram", status: "PRIVATE" },
-  { year: "2026.07", name: "gemini-brain-backup", type: "PERSONAL ARCHIVE", summary: "개발 과정의 대화와 작업 맥락을 보존하기 위한 개인 백업.", detail: "Private work log", status: "PRIVATE ONLY" },
   { year: "2026.07", name: "fcolab", type: "OPEN SOURCE · GPU TOOL", summary: "컨텍스트 관리자로 원격 Colab 작업과 세션 정리를 감싼 실험적 Python 패키지.", detail: "Python · context manager · Colab", status: "OPEN SOURCE", href: "https://github.com/IlleJiViN/fcolab" },
   { year: "2026.07", name: "drum_project", type: "COMPUTER VISION · MUSIC", summary: "손 추적과 가상 드럼스틱으로 킥, 스네어와 하이햇을 연주하는 에어 드럼 실험.", detail: "OpenCV · MediaPipe · audio", status: "OPEN SOURCE", href: "https://github.com/IlleJiViN/drum_project" },
   { year: "2026.07", name: "stock_exp", type: "AI · FINANCE UI", summary: "뉴스와 기술 지표를 여러 AI 역할로 해석하는 주식 분석 대시보드 콘셉트.", detail: "React · TypeScript · Gemini · RSS", status: "PRIVATE" },
@@ -33,6 +32,19 @@ const projects = [
   { year: "2026.08", name: "mission1", type: "LEARNING · PYTHON", summary: "JSON 영속화, 문제 CRUD, 복구와 안전 종료를 갖춘 객체지향 콘솔 퀴즈 게임.", detail: "Python · OOP · JSON · recovery", status: "OPEN SOURCE", href: "https://github.com/IlleJiViN/mission1" },
   { year: "2026.08", name: "mission2", type: "LEARNING · NPU", summary: "외부 수치 라이브러리 없이 MAC 연산, 패턴 판별과 메모리 접근 성능을 비교한 NPU 시뮬레이터.", detail: "Python · MAC · benchmark · validation", status: "OPEN SOURCE", href: "https://github.com/IlleJiViN/mission2" },
   { year: "2026.08—09", name: "MalSight", type: "SECURITY · GRAPH ML", summary: "Windows PE를 정적 CFG로 바꾸고 GIN·JEPA·MIL과 설명 가능한 인터페이스를 연결한 악성코드 탐지 연구 MVP.", detail: "663D → 128D · CPU/CUDA · XAI", status: "PRIVATE RESEARCH" },
+  {"year": "2026.09", "name": "Portfolio", "type": "FRONTEND · WEB", "summary": "프레임워크 없이 이벤트·상태·렌더링 흐름을 구성한 반응형 자기소개 페이지. 다크 모드, GitHub API 프로젝트 목록과 폼 검증을 구현.", "detail": "HTML · CSS · JavaScript · REST API", "status": "OPEN SOURCE", "href": "https://github.com/IlleJiViN/portfolio"},
+  {"year": "2026.10", "name": "WebAgent / compy_u&i", "type": "AGENT · EMBEDDED SDK", "summary": "기존 웹사이트의 지정된 요소에 에이전트를 연결하는 SDK. 선택자 바인딩, 크기 변경, 보호된 컨트롤과 레이아웃 롤백을 구현. 실제 Jev·CLM 제공자 연동은 추가 검증 중.", "detail": "TypeScript · DOM · SDK · Vitest", "status": "IN DEVELOPMENT"},
+  {"year": "2026.10", "name": "Omok++ / AlphaOmok", "type": "REINFORCEMENT LEARNING · GAME AI", "summary": "돌 포획 규칙이 있는 오목에 정책·가치 신경망과 PUCT MCTS를 적용. 자가대국 학습 코드, 대국 GUI와 Python SDK를 구성.", "detail": "PyTorch · ResNet · MCTS · self-play", "status": "OPEN SOURCE", "href": "https://github.com/IlleJiViN/omok-plus"},
+  {"year": "2026.10", "name": "AutoDrive JEPA Robustness", "type": "VISION · RESEARCH", "summary": "BDD100K 객체 검출과 안개·비·저조도·블러 조건을 평가한 연구. 동일 조건의 지도학습 기준 모델과 JEPA를 비교하고 표현 붕괴와 검출기 구조를 분석.", "detail": "PyTorch · ViT · BDD100K · matched evaluation", "status": "OPEN RESEARCH", "href": "https://github.com/IlleJiViN/autodrive-jepa-robustness"},
+  {"year": "2026.10", "name": "Robust Visual Encoder", "type": "SELF-SUPERVISED LEARNING · RESEARCH", "summary": "고정 DINOv2 Teacher의 clean 특징에 왜곡 영상의 Student를 정렬하는 Phase 1 학습·평가 도구. 실제 DINOv2 성능 실험과 Phase 2 주행 평가는 후속 과제.", "detail": "DINOv2 · teacher/student · latent alignment", "status": "OPEN RESEARCH", "href": "https://github.com/IlleJiViN/robust-visual-encoder"},
+  {"year": "2026.10", "name": "FlyBeat / FlyBand", "type": "NEUROMECHANICS · MUSIC · RESEARCH", "summary": "초파리 커넥톰 기반 회로와 FlyGym·MuJoCo를 연결해 앞다리의 드럼 패드 충돌을 구현. 고정 회로를 통한 감각 입력 정책을 학습 중이며, 감각 입력만으로 타격 성공은 아직 확인하지 못함.", "detail": "FlyGym · MuJoCo · connectome · input policy", "status": "ACTIVE RESEARCH"},
+];
+
+const highlights = [
+  {name: "MalSight", text: "PE → CFG → 그래프 표현 → 분류·설명까지 연결한 악성코드 정적 분석 연구 MVP. 내부 평가를 실제 신종 탐지 성능과 구분합니다.", tech: "Python · Capstone · GIN/JEPA · XAI"},
+  {name: "SpotSync", text: "장소 데이터 수집, NER, 벡터·공간 검색과 재순위를 React UI에 연결한 팀 프로젝트 계열입니다.", tech: "BGE-M3 · ColBERT · PostGIS · React"},
+  {name: "SemVid", text: "자막, 의미 기반 영상 검색과 FFmpeg 렌더링을 연결한 영상 자동화 파이프라인입니다. 실제 API·모델 통합 실행은 추가 검증이 필요합니다.", tech: "Whisper · Gemini · ColBERT · FFmpeg"},
+  {name: "에이전트 개발 도구", text: "Codex에서 Antigravity CLI로 작업을 위임하는 MCP 플러그인과 웹사이트에 설치하는 에이전트 SDK를 개발했습니다.", tech: "TypeScript · MCP · CLI · DOM"},
 ];
 
 const notes = [
@@ -49,7 +61,7 @@ export default function Home() {
     <main>
       <header className="site-header">
         <a className="brand" href="#top" aria-label="처음으로"><span className="brand-mark">IJ</span><span>ILLEJIVIN.LOG</span></a>
-        <nav aria-label="주요 메뉴"><a href="#projects">프로젝트</a><a href="#notes">기록</a><a href="#timeline">연혁</a></nav>
+        <nav aria-label="주요 메뉴"><a href="#profile">소개</a><a href="#current">최근 작업</a><a href="#projects">전체 작업</a><a href="#notes">기록</a><a href="#timeline">연혁</a></nav>
         <a className="github-link" href="https://github.com/IlleJiViN" target="_blank" rel="noreferrer">GitHub <Arrow /></a>
       </header>
 
@@ -57,14 +69,27 @@ export default function Home() {
         <div className="hero-kicker"><span className="pulse" /> BUILDING IN PUBLIC · SEOUL</div>
         <h1>호기심을<br /><span>작동하는 것</span>으로.</h1>
         <div className="hero-bottom">
-          <p>게임 로직에서 시작해 AI 검색, 자동화 도구와 보안 연구까지. 문제를 직접 쪼개고, 만들고, 검증한 과정을 기록합니다.</p>
-          <div className="index-note"><span>INDEX / 34 REPOSITORIES</span><span>2023.11 — 2026.09</span></div>
+          <p>AI 검색과 자동화 서비스를 만들고, 보안·컴퓨터 비전·강화학습을 연구합니다. 아이디어를 코드와 인터페이스로 연결하고, 실험 결과와 한계를 함께 기록합니다.</p>
+          <div className="index-note"><span>PORTFOLIO / UPDATED 2026.10.20</span><span>2023.11 — 2026.10</span></div>
         </div>
         <div className="hero-rule"><span>SCROLL TO EXPLORE</span></div>
       </section>
 
+      <section className="section profile-section" id="profile">
+        <div className="section-heading"><div><span className="section-number">INTRO</span><h2>What I build</h2></div><p>해커톤 지원용 프로젝트 기반 소개</p></div>
+        <p className="profile-copy">Python과 TypeScript를 중심으로 AI 모델을 검색·자동화 서비스와 연결하는 프로젝트를 진행했습니다. 장소 추천 서비스 SpotSync, 영상 자동화 SemVid, 악성코드 분석 MalSight와 에이전트 개발 도구를 만들었고, 최근에는 오목 자가대국 AI, 자율주행 비전 강건성, 초파리 커넥톰 기반 제어를 연구하고 있습니다.</p>
+        <div className="skill-list"><span>AI 모델·데이터 파이프라인</span><span>API·웹 인터페이스 연결</span><span>검색·RAG·자동화</span><span>실험 설계·평가·문서화</span></div>
+        <div className="highlights">{highlights.map(item => <article key={item.name}><h3>{item.name}</h3><p>{item.text}</p><small>{item.tech}</small></article>)}</div>
+        <p className="scope-note">팀 프로젝트의 개인 담당 범위는 지원서에서 별도로 명시합니다. 아래 목록에는 학습·초기 설정 기록도 포함되며, 항목 수를 완성 프로젝트 수로 계산하지 않습니다.</p>
+      </section>
+
+      <section className="section current-section" id="current">
+        <div className="section-heading"><div><span className="section-number">NOW</span><h2>Current work</h2></div><p>2026년 10월 기준 · 최근 구현과 진행 중인 연구</p></div>
+        <div className="current-list">{projects.filter(item => item.year === "2026.10").map(item => <article key={item.name}><span className="project-status">{item.status}</span><h3>{item.name}</h3><p>{item.summary}</p>{item.href && <a href={item.href} target="_blank" rel="noreferrer">코드와 문서 ↗</a>}</article>)}</div>
+      </section>
+
       <section className="section" id="projects">
-        <div className="section-heading"><div><span className="section-number">01</span><h2>All work</h2></div><p>34개 저장소를 첫 기록부터 최신 연구까지 한 줄로 연결했습니다. 공개 프로젝트는 카드를 눌러 코드를 볼 수 있습니다.</p></div>
+        <div className="section-heading"><div><span className="section-number">01</span><h2>All work</h2></div><p>첫 기록부터 최근 연구까지 {projects.length}개 작업 기록을 시간순으로 정리했습니다. 공개 작업은 코드로 연결하고, 비공개 작업은 설명과 상태를 표시합니다.</p></div>
         <div className="project-grid">
           {projects.map((project, index) => {
             const content = <><div className="project-top"><span>{String(index + 1).padStart(2, "0")} / {project.year}</span><span className="project-status">{project.status}</span></div><div><p className="project-type">{project.type}</p><h3>{project.name}</h3><p className="project-summary">{project.summary}</p></div><div className="project-footer"><span>{project.detail}</span>{project.href && <span className="project-arrow"><Arrow /></span>}</div></>;
