@@ -1,0 +1,73 @@
+name: 블로그 글
+description: 프로젝트 설명·일기·후기와 사진을 작성합니다.
+labels: [blog]
+body:
+  - type: markdown
+    attributes:
+      value: "제목과 아래 내용을 작성하세요. 사진은 본문에 끌어넣거나 붙여넣을 수 있습니다. blog 라벨이 붙은 소유자의 열린 글만 공개됩니다. 초안은 blog 라벨을 빼고, 공개를 내리려면 글을 닫으세요."
+  - type: dropdown
+    id: project
+    attributes:
+      label: 프로젝트
+      options:
+        - 일반 일기
+        - "test"
+        - "game-project"
+        - "game"
+        - "early-python-prototypes"
+        - "sw-game"
+        - "cuuube"
+        - "classify-on-chrome"
+        - "Calculator"
+        - "godot_game"
+        - "godot_game_2d"
+        - "god_ot"
+        - "teample"
+        - "crazy"
+        - "comp_team / SpotSync"
+        - "spotsync-contest"
+        - "where2meet"
+        - "genai_spotsync"
+        - "share"
+        - "Fin-GNN-RAG"
+        - "spotsync-crawler"
+        - "Trot_MV_Automation"
+        - "semvid"
+        - "fcolab"
+        - "drum_project"
+        - "stock_exp"
+        - "sunomidi"
+        - "gpu-price-compare"
+        - "recycle-bin-browser"
+        - "codex-antigravity-subagent"
+        - "mission"
+        - "mission1"
+        - "mission2"
+        - "MalSight"
+        - "Portfolio"
+        - "WebAgent / compy_u&i"
+        - "Omok++ / AlphaOmok"
+        - "AutoDrive JEPA Robustness"
+        - "Robust Visual Encoder"
+        - "FlyBeat / FlyBand"
+    validations:
+      required: true
+  - type: input
+    id: date
+    attributes:
+      label: 날짜
+      description: YYYY-MM-DD 형식. 비워두면 작성일을 사용합니다.
+      placeholder: "2026-10-20"
+  - type: input
+    id: excerpt
+    attributes:
+      label: 한 줄 소개
+      placeholder: 오늘 작업한 내용이나 글의 요약
+  - type: textarea
+    id: content
+    attributes:
+      label: 본문
+      description: 텍스트와 사진을 자유롭게 넣으세요. 제목, 목록, 링크, 코드 블록도 사용할 수 있습니다.
+      placeholder: "무엇을 만들었는지, 막힌 점, 해결 과정, 느낀 점을 적어보세요."
+    validations:
+      required: true
