@@ -1,5 +1,7 @@
 import Blog from './Blog';
 
+export const dynamic = 'force-static';
+
 export const metadata = { title: '블로그 — IlleJiViN', description: '프로젝트 설명, 개발 일기와 후기.' };
 
 export default function BlogPage() {
