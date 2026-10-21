@@ -40,8 +40,6 @@ body:
         - "Portfolio"
         - "비공개 웹 도구 연구"
         - "Omok++ / AlphaOmok"
-        - "AutoDrive JEPA Robustness"
-        - "Robust Visual Encoder"
         - "비공개 제어 연구"
     validations:
       required: true
