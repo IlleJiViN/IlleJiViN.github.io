@@ -17,7 +17,7 @@ export default function Home() {
     <main>
       <header className="site-header">
         <a className="brand" href="#top" aria-label="처음으로"><span className="brand-mark">IJ</span><span>ILLEJIVIN.LOG</span></a>
-        <nav aria-label="주요 메뉴"><a href="#profile">소개</a><a href="#current">최근 작업</a><a href="/blog/">블로그</a><a href="#timeline">연혁</a></nav>
+        <nav aria-label="주요 메뉴"><a href="#profile">소개</a><a href="#current">최근 작업</a><a href="/blog/">블로그</a></nav>
         <div className="header-actions"><ThemeToggle /><a className="github-link" href="https://github.com/IlleJiViN" target="_blank" rel="noreferrer">GitHub <Arrow /></a></div>
       </header>
 
@@ -48,17 +48,7 @@ export default function Home() {
         <Blog compact />
       </section>
 
-      <section className="section timeline-section" id="timeline">
-        <div className="section-heading"><div><span className="section-number">03</span><h2>Trajectory</h2></div><p>저장소의 수가 아니라 문제를 다루는 범위가 넓어진 과정.</p></div>
-        <ol className="timeline">
-          <li><span>2024</span><strong>게임 시스템</strong><p>Pygame으로 이동, 카메라, AI, 충돌과 투사체를 직접 구현.</p></li>
-          <li><span>2025</span><strong>알고리즘 × ML</strong><p>루빅스 큐브 탐색과 브라우저 뉴스 분류로 문제 영역 확장.</p></li>
-          <li><span>2026 H1</span><strong>제품과 데이터</strong><p>검색 모델, 공간 데이터와 팀 서비스를 하나의 파이프라인으로 연결.</p></li>
-          <li><span>2026 H2</span><strong>도구와 연구</strong><p>오픈소스 플러그인, 네이티브 앱과 설명 가능한 보안 연구로 심화.</p></li>
-        </ol>
-      </section>
-
-      <footer><div className="footer-callout"><span>NEXT QUESTION?</span><p>새로운 문제를 발견하면<br />일단 작게 만들어봅니다.</p></div><div className="footer-bottom"><span>© 2026 ILLEJIVIN</span><a href="https://github.com/IlleJiViN" target="_blank" rel="noreferrer">GITHUB <Arrow /></a><a href="#top">BACK TO TOP ↑</a></div></footer>
+      <footer><div className="footer-bottom"><span>© 2026 ILLEJIVIN</span><a href="https://github.com/IlleJiViN" target="_blank" rel="noreferrer">GITHUB <Arrow /></a><a href="#top">BACK TO TOP ↑</a></div></footer>
     </main>
   );
 }
