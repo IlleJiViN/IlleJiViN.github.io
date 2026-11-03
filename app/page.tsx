@@ -27,9 +27,6 @@ export default function Home() {
       </section>
 
       <section className="section profile-section" id="profile">
-        <div className="section-heading"><div><span className="section-number">INTRO</span><h2>What I build</h2></div><p>프로젝트와 연구, 작업 기록을 모았습니다.</p></div>
-        <p className="profile-copy">AI 검색과 자동화 도구를 만들고, 컴퓨터 비전과 강화학습을 연구합니다. 일부 프로젝트는 개요만 공개합니다.</p>
-        <div className="skill-list"><span>AI 모델·데이터 파이프라인</span><span>API·웹 인터페이스 연결</span><span>검색·RAG·자동화</span><span>실험 설계·평가·문서화</span></div>
         <div className="highlights">{highlights.map(item => <article key={item.name}><h3>{item.name}</h3><p>{item.text}</p><small>{item.tech}</small></article>)}</div>
         <p className="scope-note">비공개 프로젝트는 분야와 개요만 표시합니다.</p>
       </section>
