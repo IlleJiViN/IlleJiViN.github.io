@@ -4,15 +4,16 @@ import { useEffect, useRef, useState } from 'react';
 import Markdown from 'react-markdown';
 import posts from './posts.json';
 import { projects } from '../projects';
+import { comparePosts, getSeriesNavigation, isHiddenProject } from './series.mjs';
 
-type Post = { id: number; title: string; project: string; date: string; updated: string; excerpt: string; body: string; url: string };
+type Post = { id: number; title: string; project: string; order?: number | null; date: string; updated: string; excerpt: string; body: string; url: string };
 type ProjectGroup = { name: string; type: string; summary: string; year: string; posts: Post[] };
 
 const entries = posts as Post[];
 const writeUrl = 'https://github.com/IlleJiViN/IlleJiViN.github.io/issues/new?template=blog.yml';
-const publicProjects = projects.filter(item => item.status !== 'PRIVATE');
+const publicProjects = projects.filter(item => item.status !== 'PRIVATE' && !isHiddenProject(item.name));
 const privateProjectNames = new Set(projects.filter(item => item.status === 'PRIVATE').map(item => item.name));
-const publishedEntries = entries.filter(post => !privateProjectNames.has(post.project));
+const publishedEntries = entries.filter(post => !privateProjectNames.has(post.project) && !isHiddenProject(post.project));
 const projectNames = new Set(publicProjects.map(item => item.name));
 const extraProjectNames = [...new Set(publishedEntries.map(post => post.project))].filter(name => !projectNames.has(name));
 const allGroups: ProjectGroup[] = [
@@ -20,7 +21,7 @@ const allGroups: ProjectGroup[] = [
   ...publicProjects.map(item => ({ name: item.name, type: item.type, summary: item.summary, year: item.year, posts: [] as Post[] })),
 ].map(group => ({
   ...group,
-  posts: publishedEntries.filter(post => post.project === group.name).sort((a, b) => a.date.localeCompare(b.date) || a.id - b.id),
+  posts: publishedEntries.filter(post => post.project === group.name).sort(comparePosts),
 }));
 
 function matchPost(post: Post, query: string) {
@@ -143,6 +144,7 @@ export default function Blog({ compact = false }: { compact?: boolean }) {
 
   const current = publishedEntries.find(post => post.id === postId);
   const groups = visibleGroups(project, query);
+  const navigation = current ? getSeriesNavigation(publishedEntries, current) : null;
 
   function updateUrl(nextProject: string, nextQuery: string) {
     const url = new URL(window.location.href);
@@ -175,7 +177,7 @@ export default function Blog({ compact = false }: { compact?: boolean }) {
           <a href={`/blog/${project ? `?project=${encodeURIComponent(project)}` : ''}`}>← 글 목록</a>
           <a className="blog-edit" href={`${current.url}/edit`} target="_blank" rel="noreferrer">수정 ↗</a>
         </div>
-        <p className="blog-meta">{current.date} · {current.project}</p>
+        <p className="blog-meta">{current.date} · {current.project}{navigation && ` · ${navigation.position} / ${navigation.total}차시`}</p>
         <h1>{current.title}</h1>
         {current.excerpt && <p className="blog-lead">{current.excerpt}</p>}
         <div className="blog-body">
@@ -185,6 +187,16 @@ export default function Blog({ compact = false }: { compact?: boolean }) {
           }}>{current.body}</Markdown>
         </div>
         <a className="blog-source" href={current.url} target="_blank" rel="noreferrer">GitHub 원문 ↗</a>
+        {navigation && <nav className="post-pagination" aria-label="같은 프로젝트의 이전·다음 글">
+          {navigation.previous ? <a className="post-pagination-item" rel="prev" href={`/blog/?post=${navigation.previous.id}&project=${encodeURIComponent(current.project)}`}>
+            <span className="post-pagination-label">← 이전 글</span>
+            <span className="post-pagination-title">{navigation.previous.title}</span>
+          </a> : <span className="post-pagination-item is-disabled"><span className="post-pagination-label">이전 글 없음</span></span>}
+          {navigation.next ? <a className="post-pagination-item post-pagination-next" rel="next" href={`/blog/?post=${navigation.next.id}&project=${encodeURIComponent(current.project)}`}>
+            <span className="post-pagination-label">다음 글 →</span>
+            <span className="post-pagination-title">{navigation.next.title}</span>
+          </a> : <span className="post-pagination-item post-pagination-next is-disabled"><span className="post-pagination-label">다음 글 없음</span></span>}
+        </nav>}
       </article>
     ) : <div className="blog-empty"><h1>글을 찾을 수 없습니다.</h1><a href="/blog/">목록으로 돌아가기 →</a></div>;
   }
@@ -231,7 +243,7 @@ export default function Blog({ compact = false }: { compact?: boolean }) {
           })}
         </div>
       ) : <div className="blog-empty"><p>{query ? '검색 결과가 없습니다.' : '공개된 프로젝트가 없습니다.'}</p><button type="button" className="blog-reset" onClick={() => { setProject(''); setQuery(''); setExpanded(new Set()); updateUrl('', ''); }}>전체 보기</button></div>}
-      {!compact && <details className="blog-help"><summary>글과 사진 올리는 방법</summary><ol><li>글쓰기를 누르고 GitHub에 로그인합니다.</li><li>제목·프로젝트·본문을 작성하고, 사진을 본문에 끌어넣거나 붙여넣습니다.</li><li>blog 라벨이 붙은 상태로 등록하면 배포 후 공개됩니다.</li><li>글 상세의 수정 버튼으로 GitHub에서 내용을 고칠 수 있습니다. 비공개 전환은 blog 라벨 제거 또는 글 닫기로 처리합니다.</li></ol><p>소유자 IlleJiViN의 글만 사이트에 표시됩니다. 초안은 blog 라벨 없이 저장하세요.</p></details>}
+      {!compact && <details className="blog-help"><summary>글과 사진 올리는 방법</summary><ol><li>글쓰기를 누르고 GitHub에 로그인합니다.</li><li>제목·프로젝트·본문을 작성하고, 사진을 본문에 끌어넣거나 붙여넣습니다.</li><li>차시 순서에 양의 정수를 넣으면 같은 프로젝트 안에서 작은 숫자부터 정렬됩니다. 비워둔 글은 번호 있는 글 뒤에 작성일 순서로 표시됩니다. 같은 번호는 작성일·글 번호 순서로 정렬됩니다.</li><li>blog 라벨이 붙은 상태로 등록하면 배포 후 공개됩니다.</li><li>글 상세의 수정 버튼으로 GitHub에서 내용을 고칠 수 있습니다. 비공개 전환은 blog 라벨 제거 또는 글 닫기로 처리합니다.</li></ol><p>소유자 IlleJiViN의 글만 사이트에 표시됩니다. 초안은 blog 라벨 없이 저장하세요.</p></details>}
     </div>
   );
 }

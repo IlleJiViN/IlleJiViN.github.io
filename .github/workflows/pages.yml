@@ -27,7 +27,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: node --test scripts/blog.test.mjs
+      - run: node --test scripts/*.test.mjs
       - run: node scripts/sync-blog.mjs
         env:
           GH_TOKEN: ${{ github.token }}

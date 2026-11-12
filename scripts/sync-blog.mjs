@@ -1,13 +1,19 @@
 import { writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
+import { isHiddenProject } from '../app/blog/series.mjs';
 
 export function parsePost(issue) {
   if (issue.pull_request || issue.user?.login?.toLowerCase() !== 'illejivin' || issue.state !== 'open' || !issue.labels?.some(label => (typeof label === 'string' ? label : label.name) === 'blog')) return null;
   const fields = {};
-  for (const match of (issue.body || '').matchAll(/^### (프로젝트|날짜|한 줄 소개|본문)\r?\n([\s\S]*?)(?=^### (?:프로젝트|날짜|한 줄 소개|본문)\r?$|$(?![\s\S]))/gm)) {
+  for (const match of (issue.body || '').matchAll(/^### (프로젝트|날짜|차시 순서|한 줄 소개|본문)\r?\n([\s\S]*?)(?=^### (?:프로젝트|날짜|차시 순서|한 줄 소개|본문)\r?$|$(?![\s\S]))/gm)) {
     fields[match[1]] = match[2].trim().replace(/^_No response_$/, '');
   }
   if (!fields['본문']) return null;
+  const project = fields['프로젝트'] || '일반 일기';
+  if (isHiddenProject(project)) return null;
+  const rawOrder = fields['차시 순서'] || '';
+  const parsedOrder = /^\d+$/.test(rawOrder) ? Number(rawOrder) : NaN;
+  const order = Number.isSafeInteger(parsedOrder) && parsedOrder > 0 ? parsedOrder : null;
   const date = fields['날짜'];
   const validDate = /^\d{4}-\d{2}-\d{2}$/.test(date || '') && !Number.isNaN(Date.parse(date)) && new Date(date).toISOString().slice(0, 10) === date;
   const body = fields['본문'].replace(/<img\b[^>]*>/gi, tag => {
@@ -15,7 +21,7 @@ export function parsePost(issue) {
     if (!src || !/^https:\/\/(?:github\.com\/user-attachments\/assets\/|user-images\.githubusercontent\.com\/)/i.test(src)) return '';
     return `![프로젝트 사진](${src})`;
   });
-  return { id: issue.number, title: issue.title, project: fields['프로젝트'] || '일반 일기', date: validDate ? date : issue.created_at.slice(0, 10), updated: issue.updated_at, excerpt: fields['한 줄 소개'] || '', body, url: issue.html_url };
+  return { id: issue.number, title: issue.title, project, order, date: validDate ? date : issue.created_at.slice(0, 10), updated: issue.updated_at, excerpt: fields['한 줄 소개'] || '', body, url: issue.html_url };
 }
 
 export async function syncBlog() {

@@ -34,10 +34,7 @@ body:
         - "recycle-bin-browser"
         - "codex-antigravity-subagent"
         - "mission"
-        - "mission1"
-        - "mission2"
         - "비공개 보안 연구"
-        - "Portfolio"
         - "비공개 웹 도구 연구"
         - "Omok++ / AlphaOmok"
         - "비공개 제어 연구"
@@ -49,6 +46,12 @@ body:
       label: 날짜
       description: YYYY-MM-DD 형식. 비워두면 작성일을 사용합니다.
       placeholder: "2026-10-20"
+  - type: input
+    id: order
+    attributes:
+      label: 차시 순서
+      description: 같은 프로젝트 안에서 작은 숫자부터 정렬합니다. 1 이상의 정수만 입력하세요. 비워두면 번호 있는 글 뒤에 작성일 순으로 표시합니다.
+      placeholder: "1"
   - type: input
     id: excerpt
     attributes:
