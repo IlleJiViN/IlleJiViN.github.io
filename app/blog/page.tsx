@@ -1,10 +1,12 @@
 import Blog from './Blog';
-import ThemeToggle from '../ThemeToggle';
+import BlogHeader from '../BlogHeader';
 
 export const dynamic = 'force-static';
-
-export const metadata = { title: '블로그 — IlleJiViN', description: '프로젝트 설명, 개발 일기와 후기.' };
+export const metadata = {
+  title: '블로그 — IlleJiViN',
+  description: '프로젝트와 개발 기록, 일기와 음악 이야기.',
+};
 
 export default function BlogPage() {
-  return <main className="blog-page"><header className="blog-header"><a href="/">← 블로그 홈</a><div className="header-actions"><ThemeToggle /><a href="https://github.com/IlleJiViN/IlleJiViN.github.io/issues/new?template=blog.yml" target="_blank" rel="noreferrer">글쓰기 ↗</a></div></header><Blog /></main>;
+  return <main className="blog-page"><BlogHeader /><Blog /></main>;
 }
