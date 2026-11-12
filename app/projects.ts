@@ -26,4 +26,6 @@ export const projects = [
   {"year": "2026.10", "name": "비공개 웹 도구 연구", "type": "PRIVATE PROJECT", "summary": "웹 사용 경험을 개선하는 도구를 연구하고 있습니다.", "detail": "세부 내용 비공개", "status": "PRIVATE"},
   {"year": "2026.10", "name": "Omok++ / AlphaOmok", "type": "REINFORCEMENT LEARNING · GAME AI", "summary": "돌 포획 규칙이 있는 오목에 정책·가치 신경망과 PUCT MCTS를 적용. 자가대국 학습 코드, 대국 GUI와 Python SDK를 구성.", "detail": "PyTorch · ResNet · MCTS · self-play", "status": "OPEN SOURCE", "href": "https://github.com/IlleJiViN/omok-plus"},
   {"year": "2026.10", "name": "비공개 제어 연구", "type": "PRIVATE PROJECT", "summary": "가상 환경에서 입력과 움직임의 관계를 탐구하고 있습니다.", "detail": "세부 내용 비공개", "status": "PRIVATE"},
+  { year: "", name: "MalSight", type: "SECURITY · GRAPH ML", summary: "실행 파일을 그래프로 표현하고, 모델의 판단과 평가 조건을 살펴보는 연구 기록.", detail: "PE · CFG · graph representation", status: "RESEARCH" },
+  { year: "", name: "RAVEL", type: "COMPUTER VISION · RESEARCH", summary: "사전학습 시각 모델의 표현에서 변화의 흔적을 찾고, 잔차와 군집을 분석하는 연구 기록.", detail: "Swin-T · latent residual · clustering", status: "RESEARCH" },
 ];

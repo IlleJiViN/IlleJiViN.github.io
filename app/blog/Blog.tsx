@@ -5,6 +5,7 @@ import Markdown from 'react-markdown';
 import posts from './posts.json';
 import { projects } from '../projects';
 import { comparePosts, getSeriesNavigation, isHiddenProject } from './series.mjs';
+import useProjectMotion from './useProjectMotion';
 
 type Post = { id: number; title: string; project: string; order?: number | null; date: string; updated: string; excerpt: string; body: string; url: string };
 type ProjectGroup = { name: string; type: string; summary: string; year: string; posts: Post[] };
@@ -56,91 +57,7 @@ export default function Blog({ compact = false }: { compact?: boolean }) {
     if (initialProject || initialQuery) setExpanded(new Set(visibleGroups(initialProject, initialQuery).map(group => group.name)));
   }, []);
 
-  useEffect(() => {
-    const index = indexRef.current;
-    if (!index) return;
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const groups = [...index.querySelectorAll<HTMLElement>('.project')];
-    const animations = new Map<HTMLElement, Animation>();
-    const removers: Array<() => void> = [];
-    let frame = 0;
-    let pointerX = 0;
-    let pointerY = 0;
-
-    const clearMotion = () => {
-      animations.forEach(animation => animation.cancel());
-      index.querySelectorAll<HTMLElement>('.project-cover').forEach(cover => {
-        cover.style.removeProperty('--rotate-x');
-        cover.style.removeProperty('--rotate-y');
-      });
-    };
-    const onPreference = () => { if (reduced.matches) clearMotion(); };
-    reduced.addEventListener('change', onPreference);
-
-    for (const group of groups) {
-      const button = group.querySelector<HTMLElement>('.project-toggle');
-      const cover = group.querySelector<HTMLElement>('.project-cover');
-      if (!button || !cover) continue;
-      const onMove = (event: PointerEvent) => {
-        if (reduced.matches || event.pointerType !== 'mouse') return;
-        const rect = cover.getBoundingClientRect();
-        const x = Math.max(-1, Math.min(1, (event.clientX - rect.left - rect.width / 2) / (rect.width / 2)));
-        const y = Math.max(-1, Math.min(1, (event.clientY - rect.top - rect.height / 2) / (rect.height / 2)));
-        cover.style.setProperty('--rotate-x', `${(-y * 3).toFixed(2)}deg`);
-        cover.style.setProperty('--rotate-y', `${(x * 3).toFixed(2)}deg`);
-      };
-      const onLeave = () => {
-        cover.style.removeProperty('--rotate-x');
-        cover.style.removeProperty('--rotate-y');
-      };
-      const onFocus = () => animations.get(group)?.cancel();
-      button.addEventListener('pointermove', onMove, { passive: true });
-      button.addEventListener('pointerleave', onLeave);
-      group.addEventListener('focusin', onFocus);
-      removers.push(() => {
-        button.removeEventListener('pointermove', onMove);
-        button.removeEventListener('pointerleave', onLeave);
-        group.removeEventListener('focusin', onFocus);
-      });
-    }
-
-    const onPointer = (event: PointerEvent) => {
-      if (reduced.matches || event.pointerType !== 'mouse') return;
-      pointerX = event.clientX;
-      pointerY = event.clientY + window.scrollY;
-      if (frame) return;
-      frame = window.requestAnimationFrame(() => {
-        document.documentElement.style.setProperty('--pointer-x', `${pointerX}px`);
-        document.documentElement.style.setProperty('--pointer-y', `${pointerY}px`);
-        frame = 0;
-      });
-    };
-    window.addEventListener('pointermove', onPointer, { passive: true });
-
-    const observer = 'IntersectionObserver' in window ? new IntersectionObserver(changes => {
-      for (const change of changes) {
-        const group = change.target as HTMLElement;
-        if (!change.isIntersecting || reduced.matches || group.contains(document.activeElement) || typeof group.animate !== 'function') continue;
-        animations.get(group)?.cancel();
-        animations.set(group, group.animate([
-          { opacity: 0.55, transform: 'translateY(12px)' },
-          { opacity: 1, transform: 'translateY(0)' },
-        ], { duration: 480, easing: 'cubic-bezier(.22,.61,.36,1)' }));
-      }
-    }, { threshold: 0.16, rootMargin: '0px 0px -12px 0px' }) : null;
-    groups.forEach(group => observer?.observe(group));
-
-    return () => {
-      observer?.disconnect();
-      clearMotion();
-      removers.forEach(remove => remove());
-      reduced.removeEventListener('change', onPreference);
-      window.removeEventListener('pointermove', onPointer);
-      window.cancelAnimationFrame(frame);
-      document.documentElement.style.removeProperty('--pointer-x');
-      document.documentElement.style.removeProperty('--pointer-y');
-    };
-  }, [project, query, postId, compact]);
+  useProjectMotion(indexRef, project, query, postId, compact);
 
   const current = publishedEntries.find(post => post.id === postId);
   const groups = visibleGroups(project, query);
@@ -214,7 +131,8 @@ export default function Blog({ compact = false }: { compact?: boolean }) {
       {groups.length ? (
         <div className="project-list">
           {(compact ? groups.slice(0, 3) : groups).map(group => {
-            const position = allGroups.indexOf(allGroups.find(item => item.name === group.name)!) + 1;
+            const fullGroup = allGroups.find(item => item.name === group.name)!;
+            const position = allGroups.indexOf(fullGroup) + 1;
             const id = `project-tracks-${position}`;
             const isExpanded = expanded.has(group.name);
             return <article className="project" key={group.name}>
@@ -223,7 +141,7 @@ export default function Blog({ compact = false }: { compact?: boolean }) {
                   <span className="project-number">{String(position).padStart(2, '0')}</span>
                   <span className="project-cover" aria-hidden="true" />
                   <span className="project-copy">
-                    <span className="project-name-line"><span className="project-title">{group.name}</span><span className="project-meta">{group.type}</span></span>
+                    <span className="project-name-line"><span className="project-title">{group.name}</span><span className="project-meta">{group.type}</span>{fullGroup.posts.length > 0 && <span className="project-count">{fullGroup.posts.length}편</span>}</span>
                     {group.summary && <span className="project-description">{group.summary}</span>}
                   </span>
                   <span className="project-chevron" aria-hidden="true">+</span>
@@ -231,7 +149,7 @@ export default function Blog({ compact = false }: { compact?: boolean }) {
               </h2>
               <div className="project-tracks" id={id} hidden={!isExpanded}>
                 {group.posts.length ? group.posts.map(post => {
-                  const chapter = allGroups.find(item => item.name === group.name)!.posts.findIndex(item => item.id === post.id) + 1;
+                  const chapter = fullGroup.posts.findIndex(item => item.id === post.id) + 1;
                   return <a className="track-row" href={`/blog/?post=${post.id}&project=${encodeURIComponent(group.name)}`} key={post.id}>
                     <span className="track-number">{String(chapter).padStart(2, '0')}</span>
                     <span className="track-copy"><span className="track-title">{post.title}</span>{post.excerpt && <span className="track-excerpt">{post.excerpt}</span>}</span>

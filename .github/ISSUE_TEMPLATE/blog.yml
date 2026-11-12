@@ -11,6 +11,8 @@ body:
       label: 프로젝트
       options:
         - 일반 일기
+        - MalSight
+        - RAVEL
         - "비공개 프로젝트 01"
         - "비공개 프로젝트 02"
         - "cuuube"
