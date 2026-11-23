@@ -1,18 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import Markdown from 'react-markdown';
 import posts from './posts.json';
 import { projects } from '../projects';
 import { comparePosts, getSeriesNavigation, isHiddenProject } from './series.mjs';
 import useProjectMotion from './useProjectMotion';
 import useScoreSlider from './useScoreSlider';
+import TabScore from './TabScore';
+import { TAB_STRINGS, type PostTab } from './tabScore.mjs';
 
-type Post = { id: number; title: string; project: string; order?: number | null; date: string; updated: string; excerpt: string; body: string; url: string };
+type Post = { id: number; title: string; project: string; order?: number | null; date: string; updated: string; excerpt: string; body: string; url: string; tab?: PostTab };
 type ProjectGroup = { name: string; type: string; summary: string; year: string; posts: Post[] };
 
+const TabComposer = lazy(() => import('./TabComposer'));
 const PAGE_SIZE = 5;
-const TAB_STRINGS = ['e', 'B', 'G', 'D', 'A', 'E'];
 const entries = posts as Post[];
 const writeUrl = 'https://github.com/IlleJiViN/IlleJiViN.github.io/issues/new?template=blog.yml';
 const publicProjects = projects.filter(item => item.status !== 'PRIVATE' && !isHiddenProject(item.name));
@@ -29,7 +31,7 @@ const allGroups: ProjectGroup[] = [
 }));
 
 function matchPost(post: Post, query: string) {
-  return `${post.title} ${post.excerpt} ${post.body}`.toLocaleLowerCase().includes(query);
+  return `${post.title} ${post.excerpt} ${post.body} ${post.tab?.mood ?? ''}`.toLocaleLowerCase().includes(query);
 }
 
 function visibleGroups(project: string, query: string) {
@@ -63,6 +65,7 @@ export default function Blog({ compact = false }: { compact?: boolean }) {
   const [project, setProject] = useState('');
   const [query, setQuery] = useState('');
   const [postId, setPostId] = useState<number | null>(null);
+  const [editTab, setEditTab] = useState(false);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const indexRef = useRef<HTMLDivElement>(null);
   const detailRef = useRef<HTMLElement>(null);
@@ -75,6 +78,7 @@ export default function Blog({ compact = false }: { compact?: boolean }) {
     setProject(initialProject);
     setQuery(initialQuery);
     setPostId(Number(params.get('post')) || null);
+    setEditTab(params.get('tab') === 'edit');
     if (initialProject || initialQuery) {
       const matches = visibleGroups(initialProject, initialQuery);
       setSelectedProject((matches.slice(0, PAGE_SIZE).find(group => group.posts.length > 0) || matches[0])?.name || null);
@@ -129,19 +133,43 @@ export default function Blog({ compact = false }: { compact?: boolean }) {
     setSelectedProject(previous => previous === name ? null : name);
   }
 
+  if (editTab && !compact && (!postId || current)) {
+    const backUrl = current ? `/blog/?post=${current.id}&project=${encodeURIComponent(current.project)}` : '/blog/';
+    return (
+      <section className="blog-tab-workspace" aria-label="TAB 작성">
+        <p className="blog-tab-back"><a href={backUrl}>← {current ? '글로 돌아가기' : '프로젝트로 돌아가기'}</a></p>
+        <Suspense fallback={<p role="status">악보 편집기를 여는 중…</p>}>
+          <TabComposer
+            initialScore={current?.tab?.score}
+            initialDifficulty={current?.tab?.difficulty}
+            initialMood={current?.tab?.mood}
+            issueUrl={current?.url ?? writeUrl}
+            isExisting={Boolean(current)}
+          />
+        </Suspense>
+      </section>
+    );
+  }
+
   if (postId && !compact) {
     return current ? (
       <article className="blog-post">
         <div className="blog-post-actions">
           <a href={`/blog/?project=${encodeURIComponent(current.project)}`}>← 글 목록</a>
-          <a className="blog-edit" href={`${current.url}/edit`} target="_blank" rel="noreferrer">수정 ↗</a>
+          <nav className="blog-write-actions" aria-label="글 편집">
+            <a className="blog-edit" href={`/blog/?post=${current.id}&project=${encodeURIComponent(current.project)}&tab=edit`}>TAB 편집</a>
+            <a className="blog-edit" href={`${current.url}/edit`} target="_blank" rel="noreferrer">수정 ↗</a>
+          </nav>
         </div>
         <header className="blog-post-score">
-          {navigation && <TabMeasure chapter={navigation.position} />}
+          {navigation && !current.tab?.score && <TabMeasure chapter={navigation.position} />}
           <p className="blog-meta">{current.date} · {current.project}{navigation && ` · ${navigation.position} / ${navigation.total}차시`}</p>
         </header>
         <h1>{current.title}</h1>
         {current.excerpt && <p className="blog-lead">{current.excerpt}</p>}
+        {current.tab && <aside className="blog-authored-tab" aria-label="이 글의 기타 악보">
+          <TabScore score={current.tab.score} difficulty={current.tab.difficulty} mood={current.tab.mood} />
+        </aside>}
         <div className="blog-body">
           <Markdown skipHtml components={{
             img: ({ src, alt }) => src && <img src={src} alt={alt || '프로젝트 사진'} loading="lazy" />,
@@ -171,7 +199,10 @@ export default function Blog({ compact = false }: { compact?: boolean }) {
           <label>프로젝트<select value={project} onChange={event => filterProject(event.target.value)}><option value="">전체 프로젝트</option>{allGroups.map(group => <option key={group.name}>{group.name}</option>)}</select></label>
           <label>검색<input type="search" placeholder="제목이나 내용 검색" value={query} onChange={event => search(event.target.value)} /></label>
         </>}
-        <a className="blog-write" href={compact ? '/blog/' : writeUrl} target={compact ? undefined : '_blank'} rel="noreferrer">{compact ? '모든 글 →' : '글쓰기 ↗'}</a>
+        <nav className="blog-write-actions" aria-label="블로그 작성">
+          {!compact && <a className="blog-write" href="/blog/?tab=edit">TAB 쓰기</a>}
+          <a className="blog-write" href={compact ? '/blog/' : writeUrl} target={compact ? undefined : '_blank'} rel="noreferrer">{compact ? '모든 글 →' : '글쓰기 ↗'}</a>
+        </nav>
       </div>
       {pages.length > 0 ? (
         <section className="score-shell" aria-label="프로젝트 악보">
@@ -241,6 +272,9 @@ export default function Blog({ compact = false }: { compact?: boolean }) {
                       </span>
                       <time className="track-date" dateTime={post.date}>{post.date}</time>
                     </a>
+                    {post.tab && <aside className="chapter-authored-tab" aria-label={`${chapter}차시 기타 악보`}>
+                      <TabScore score={post.tab.score} difficulty={post.tab.difficulty} mood={post.tab.mood} compact />
+                    </aside>}
                   </li>;
                 })}
               </ol> : <>

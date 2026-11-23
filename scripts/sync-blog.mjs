@@ -1,13 +1,44 @@
 import { writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { isHiddenProject } from '../app/blog/series.mjs';
+import { parseTabScore, TAB_MOOD_MAX } from '../app/blog/tabScore.mjs';
+
+const fieldHeading = /^### (프로젝트|날짜|차시 순서|한 줄 소개|TAB 난이도|TAB 기분|TAB 악보|본문)$/;
+
+function parseFields(body) {
+  const fields = {};
+  let field;
+  let value = '';
+  let fence;
+
+  function saveField() {
+    if (field) fields[field] = value.trim().replace(/^_No response_$/, '');
+  }
+
+  for (const line of body.split(/(?<=\n)/)) {
+    const text = line.replace(/\r?\n$/, '');
+    const marker = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(text);
+    if (fence) {
+      if (marker && marker[1][0] === fence[0] && marker[1].length >= fence.length && !marker[2].trim()) fence = undefined;
+    } else {
+      const heading = fieldHeading.exec(text);
+      if (heading) {
+        saveField();
+        field = heading[1];
+        value = '';
+        continue;
+      }
+      if (marker && (marker[1][0] === '~' || !marker[2].includes('`'))) fence = marker[1];
+    }
+    if (field) value += line;
+  }
+  saveField();
+  return fields;
+}
 
 export function parsePost(issue) {
   if (issue.pull_request || issue.user?.login?.toLowerCase() !== 'illejivin' || issue.state !== 'open' || !issue.labels?.some(label => (typeof label === 'string' ? label : label.name) === 'blog')) return null;
-  const fields = {};
-  for (const match of (issue.body || '').matchAll(/^### (프로젝트|날짜|차시 순서|한 줄 소개|본문)\r?\n([\s\S]*?)(?=^### (?:프로젝트|날짜|차시 순서|한 줄 소개|본문)\r?$|$(?![\s\S]))/gm)) {
-    fields[match[1]] = match[2].trim().replace(/^_No response_$/, '');
-  }
+  const fields = parseFields(issue.body || '');
   if (!fields['본문']) return null;
   const project = fields['프로젝트'] || '일반 일기';
   if (isHiddenProject(project)) return null;
@@ -21,7 +52,11 @@ export function parsePost(issue) {
     if (!src || !/^https:\/\/(?:github\.com\/user-attachments\/assets\/|user-images\.githubusercontent\.com\/)/i.test(src)) return '';
     return `![프로젝트 사진](${src})`;
   });
-  return { id: issue.number, title: issue.title, project, order, date: validDate ? date : issue.created_at.slice(0, 10), updated: issue.updated_at, excerpt: fields['한 줄 소개'] || '', body, url: issue.html_url };
+  const score = parseTabScore(fields['TAB 악보'] || '');
+  const difficulty = /^[1-5]$/.test(fields['TAB 난이도'] || '') ? Number(fields['TAB 난이도']) : null;
+  const mood = Array.from((fields['TAB 기분'] || '').split(/\r?\n/, 1)[0].trim()).slice(0, TAB_MOOD_MAX).join('');
+  const tab = score || difficulty || mood ? { score, difficulty, mood } : undefined;
+  return { id: issue.number, title: issue.title, project, order, date: validDate ? date : issue.created_at.slice(0, 10), updated: issue.updated_at, excerpt: fields['한 줄 소개'] || '', body, url: issue.html_url, ...(tab ? { tab } : {}) };
 }
 
 export async function syncBlog() {

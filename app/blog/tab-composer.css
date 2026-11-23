@@ -1,0 +1,172 @@
+.tab-composer {
+  border: 1px solid var(--line);
+  padding: clamp(var(--spacing-4), 4vw, var(--spacing-8));
+}
+
+.tab-composer-heading h1 {
+  margin: 0 0 var(--spacing-6);
+  font-family: var(--music-display-font);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--music-display-weight);
+}
+
+.tab-composer-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--spacing-6);
+}
+
+.tab-composer-editor,
+.tab-composer-preview {
+  min-width: 0;
+}
+
+.tab-composer label {
+  display: grid;
+  align-content: start;
+  gap: var(--spacing-1);
+  font-size: var(--font-size-sm);
+}
+
+.tab-composer :is(input, select, textarea) {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font: inherit;
+  min-width: 0;
+  min-height: var(--spacing-8);
+  padding: var(--spacing-1) var(--spacing-2);
+}
+
+.tab-composer :is(input, select, textarea):focus {
+  outline-offset: .15rem;
+}
+
+.tab-composer [aria-invalid="true"] {
+  border-color: var(--muted);
+  outline: 1px dashed var(--muted);
+}
+
+.tab-composer-meta {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  gap: var(--spacing-3);
+}
+
+.tab-composer-notes {
+  margin: var(--spacing-4) 0 0;
+  border: 1px solid var(--line);
+  min-width: 0;
+  padding: var(--spacing-3);
+}
+
+.tab-composer-notes legend {
+  padding-inline: var(--spacing-1);
+  color: var(--ink);
+  font-size: var(--font-size-sm);
+}
+
+.tab-composer-notes p,
+.tab-composer-preview > p,
+.tab-composer-export > p,
+.tab-composer-details p,
+.tab-composer-feedback {
+  font-size: var(--font-size-sm);
+  color: var(--muted);
+  margin: 0;
+}
+
+.tab-composer-frets {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--spacing-2);
+  margin-block: var(--spacing-3) var(--spacing-4);
+}
+
+.tab-composer-frets label {
+  text-align: center;
+}
+
+.tab-composer-frets input {
+  width: 100%;
+  text-align: center;
+}
+
+.tab-composer-beat,
+.tab-composer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--spacing-2);
+}
+
+.tab-composer-notes .tab-composer-measure {
+  margin-top: var(--spacing-3);
+}
+
+.tab-composer-preview {
+  border: 1px solid var(--line);
+  margin: 0;
+  padding: var(--spacing-3);
+}
+
+.tab-composer-preview figcaption {
+  margin-bottom: var(--spacing-3);
+  font-size: var(--font-size-sm);
+  color: var(--ink);
+}
+
+.tab-composer-details {
+  margin-top: var(--spacing-3);
+}
+
+.tab-composer-details summary {
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+}
+
+.tab-composer-details label {
+  margin-block: var(--spacing-2);
+}
+
+.tab-composer-details textarea {
+  width: 100%;
+  resize: vertical;
+  font-family: ui-monospace, monospace;
+}
+
+.tab-composer-details code {
+  overflow-wrap: anywhere;
+}
+
+.tab-composer-export {
+  border-top: 1px solid var(--line);
+  margin-top: var(--spacing-6);
+  padding-top: var(--spacing-4);
+}
+
+.tab-composer-actions {
+  align-items: center;
+  margin-top: var(--spacing-2);
+}
+
+.tab-composer-actions .astryx-button[data-variant="primary"],
+.tab-composer-actions .astryx-button[data-variant="primary"] > span {
+  color: var(--paper);
+}
+
+.tab-composer-editor > .tab-composer-feedback {
+  margin-top: var(--spacing-3);
+}
+
+@media (max-width: 54rem) {
+  .tab-composer-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 26rem) {
+  .tab-composer-frets {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

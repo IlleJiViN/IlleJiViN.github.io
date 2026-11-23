@@ -38,3 +38,47 @@ test('removed projects do not publish through legacy issues', () => {
   }
   assert.equal(parsePost({ ...issue, body: issue.body.replace('MalSight', 'mission') }).project, 'mission');
 });
+
+test('optional TAB fields are parsed from the GitHub form without altering the post', () => {
+  const original = parsePost(issue);
+  assert.ok(!('tab' in original));
+  const tabFields = [
+    '### TAB 난이도', '', '3', '',
+    '### TAB 기분', '', '차분하게, 끝은 묵직하게', '',
+    '### TAB 악보', '', '```text', '| 4:E0 8:A2+D2 8:r |', '4:e3 |', '```', '',
+  ].join('\n');
+  const post = parsePost({ ...issue, body: issue.body.replace('### 본문', `${tabFields}\n### 본문`) });
+  assert.equal(post.body, original.body);
+  assert.deepEqual(post.tab, {
+    score: { measures: [
+      [{ duration: 4, notes: { E: 0 } }, { duration: 8, notes: { A: 2, D: 2 } }, { duration: 8, notes: {} }],
+      [{ duration: 4, notes: { e: 3 } }],
+    ] },
+    difficulty: 3,
+    mood: '차분하게, 끝은 묵직하게',
+  });
+});
+
+test('TAB fields appended to existing issues ignore exact headings inside fenced markdown', () => {
+  const sample = '~~~~md\n### TAB 난이도\n\n2\n### 본문\n예시\n~~~\n~~~~\n\n글의 끝';
+  const metadata = '### TAB 기분\n\n느긋하게\n\n### TAB 악보\n\n8:E0 16:B2 16:r';
+  const body = [issue.body, sample, metadata].join('\n\n').replaceAll('\n', '\r\n');
+  const post = parsePost({ ...issue, body });
+  assert.ok(post.body.endsWith(sample.replaceAll('\n', '\r\n')));
+  assert.deepEqual(post.tab, {
+    score: { measures: [[{ duration: 8, notes: { E: 0 } }, { duration: 16, notes: { B: 2 } }, { duration: 16, notes: {} }]] },
+    difficulty: null,
+    mood: '느긋하게',
+  });
+});
+
+test('omitted TAB values and invalid scores do not affect the article', () => {
+  const post = parsePost({ ...issue, body: `${issue.body}\n\n### TAB 난이도\n\n6\n\n### TAB 기분\n\n_No response_\n\n### TAB 악보\n\n4:e25` });
+  assert.deepEqual(post, parsePost(issue));
+});
+
+test('mood and difficulty can be published before notation is written', () => {
+  const mood = '🎸'.repeat(81);
+  const post = parsePost({ ...issue, body: `${issue.body}\n\n### TAB 난이도\n\n5\n\n### TAB 기분\n\n${mood}` });
+  assert.deepEqual(post.tab, { score: null, difficulty: 5, mood: '🎸'.repeat(80) });
+});

@@ -1,0 +1,116 @@
+.authored-tab {
+  --tab-rule: var(--staff-ink, color-mix(in srgb, var(--ink) 53%, var(--paper)));
+  --tab-mark: var(--staff-accent, var(--focus));
+  --tab-sheet: var(--paper);
+  --tab-beat-width: var(--spacing-8);
+  --tab-string-height: var(--spacing-5);
+  inline-size: 100%;
+  min-inline-size: 0;
+  margin: var(--spacing-3) 0;
+  padding: var(--spacing-4);
+  border: .0625rem solid var(--line);
+  background: var(--tab-sheet);
+}
+
+.authored-tab-compact {
+  --tab-string-height: var(--spacing-4);
+  margin-block: 0 var(--spacing-3);
+  padding: var(--spacing-2) var(--spacing-3);
+}
+
+.authored-tab-markings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-2) var(--spacing-4);
+  color: var(--tab-mark);
+}
+
+.authored-tab-markings p { margin: 0; }
+.authored-tab-markings span { margin-inline-end: var(--spacing-1); color: var(--muted); font-size: var(--font-size-xs); }
+.authored-tab-mood { min-inline-size: 0; overflow-wrap: anywhere; }
+.authored-tab-mood em { font-family: var(--music-display-font, Georgia, serif); }
+.authored-tab-difficulty { font-size: var(--font-size-sm); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.authored-tab-scroller {
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  padding: var(--spacing-1) var(--spacing-1) var(--spacing-2) 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--tab-rule) var(--surface);
+}
+
+.authored-tab-scroller:focus-visible { outline-offset: .1rem; }
+
+.authored-tab-staff {
+  min-inline-size: min(100%, 28rem);
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: center;
+  vertical-align: middle;
+  color: var(--tab-mark);
+  font-family: 'Courier New', monospace;
+}
+
+.authored-tab-staff th,.authored-tab-staff td { padding: 0; }
+
+.authored-tab-staff .authored-tab-tuning {
+  position: sticky;
+  z-index: 1;
+  inset-inline-start: 0;
+  min-inline-size: var(--spacing-6);
+  inline-size: var(--spacing-6);
+  padding-inline-end: var(--spacing-2);
+  background: var(--tab-sheet);
+  font-size: var(--font-size-xs);
+}
+
+.authored-tab-clef { letter-spacing: .06em; }
+.authored-tab-staff .authored-tab-rhythm {
+  block-size: var(--spacing-8);
+  line-height: 1;
+  font-family: 'Noto Music', Bravura, 'Segoe UI Symbol', 'Apple Symbols', FreeSerif, serif;
+  font-size: var(--font-size-lg);
+  font-weight: 400;
+}
+
+.authored-tab-beat {
+  position: relative;
+  min-inline-size: var(--tab-beat-width);
+  block-size: var(--tab-string-height);
+  font-size: var(--font-size-sm);
+  line-height: 1;
+}
+
+.authored-tab-beat::before {
+  position: absolute;
+  content: '';
+  inset-inline: 0;
+  inset-block-start: 50%;
+  border-block-start: .075rem solid var(--tab-rule);
+  pointer-events: none;
+}
+
+.authored-tab-beat[data-measure-start] { border-inline-start: .075rem solid var(--tab-rule); }
+.authored-tab-beat:last-child { border-inline-end: .24rem double var(--tab-rule); }
+.authored-tab-staff tbody tr:first-child .authored-tab-beat {
+  border-image: linear-gradient(to bottom, transparent 50%, var(--tab-rule) 50%) 1;
+}
+.authored-tab-staff tbody tr:last-child .authored-tab-beat {
+  border-image: linear-gradient(to bottom, var(--tab-rule) 50%, transparent 50%) 1;
+}
+
+.authored-tab-fret {
+  position: relative;
+  padding-inline: var(--spacing-1);
+  color: var(--ink);
+  background: var(--tab-sheet);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-score-view='clear'] .authored-tab {
+  --tab-mark: var(--ink);
+}
+:root[data-score-view='clear'] .authored-tab-mood em { font-family: inherit; font-style: normal; }
+:root[data-score-view='clear'] .authored-tab-beat:last-child { border-inline-end: .075rem solid var(--tab-rule); }
