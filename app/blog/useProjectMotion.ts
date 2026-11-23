@@ -11,7 +11,6 @@ export default function useProjectMotion(
   query: string,
   postId: number | null,
   compact: boolean,
-  page = 0,
 ) {
   useEffect(() => {
     const index = indexRef.current;
@@ -37,7 +36,7 @@ export default function useProjectMotion(
     const resetRow = (row: Row) => {
       row.group.removeAttribute('data-pointer-active');
       for (const name of ['--row-x', '--row-y']) row.button.style.removeProperty(name);
-      for (const name of ['--rotate-x', '--rotate-y', '--cover-x', '--cover-y']) row.cover.style.removeProperty(name);
+      for (const name of ['--rotate-x', '--rotate-y']) row.cover.style.removeProperty(name);
       for (const name of ['--magnet-x', '--magnet-y']) row.chevron?.style.removeProperty(name);
     };
     const clearMotion = () => {
@@ -50,7 +49,8 @@ export default function useProjectMotion(
       document.documentElement.style.removeProperty('--pointer-x');
       document.documentElement.style.removeProperty('--pointer-y');
     };
-    const canTrack = () => !reduced.matches && finePointer.matches;
+    const isExpressive = () => document.documentElement.dataset.scoreView !== 'clear';
+    const canTrack = () => isExpressive() && !reduced.matches && finePointer.matches;
     const drawPointer = () => {
       frame = 0;
       if (!canTrack()) return;
@@ -67,8 +67,6 @@ export default function useProjectMotion(
       row.button.style.setProperty('--row-y', `${pointerY - rect.top}px`);
       row.cover.style.setProperty('--rotate-x', `${((0.5 - y) * 12).toFixed(2)}deg`);
       row.cover.style.setProperty('--rotate-y', `${((x - 0.5) * 12).toFixed(2)}deg`);
-      row.cover.style.setProperty('--cover-x', `${(x * 100).toFixed(1)}%`);
-      row.cover.style.setProperty('--cover-y', `${(y * 100).toFixed(1)}%`);
       if (chevron) {
         const dx = pointerX - (chevron.left + chevron.width / 2);
         const dy = pointerY - (chevron.top + chevron.height / 2);
@@ -87,11 +85,8 @@ export default function useProjectMotion(
     reduced.addEventListener('change', onPreference);
     finePointer.addEventListener('change', onPreference);
     window.addEventListener('pointermove', schedule, { passive: true });
-    const onDetailFocus = (event: FocusEvent) => {
-      const tracks = (event.target as HTMLElement).closest<HTMLElement>('.project-tracks');
-      if (tracks) animations.get(tracks)?.cancel();
-    };
-    index.addEventListener('focusin', onDetailFocus);
+    const viewObserver = new MutationObserver(onPreference);
+    viewObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-score-view'] });
 
     for (const group of groups) {
       const button = group.querySelector<HTMLElement>('.project-toggle');
@@ -111,8 +106,6 @@ export default function useProjectMotion(
       };
       const onFocus = () => {
         animations.get(group)?.cancel();
-        const tracks = group.querySelector<HTMLElement>('.project-tracks');
-        if (tracks?.contains(document.activeElement)) animations.get(tracks)?.cancel();
       };
       button.addEventListener('pointerenter', onEnter);
       button.addEventListener('pointerleave', onLeave);
@@ -128,39 +121,25 @@ export default function useProjectMotion(
     const observer = 'IntersectionObserver' in window ? new IntersectionObserver(changes => {
       for (const change of changes) {
         const group = change.target as HTMLElement;
-        if (!change.isIntersecting || reduced.matches || group.contains(document.activeElement) || typeof group.animate !== 'function') continue;
+        const copy = group.querySelector<HTMLElement>('.project-copy');
+        if (!change.isIntersecting || !isExpressive() || reduced.matches || group.contains(document.activeElement) || !copy?.animate || group.closest('[data-dragging]')) continue;
         animations.get(group)?.cancel();
-        animations.set(group, group.animate([
-          { opacity: 0.55, transform: 'translateY(12px)' },
+        animations.set(group, copy.animate([
+          { opacity: 0.65, transform: 'translateY(4px)' },
           { opacity: 1, transform: 'translateY(0)' },
         ], motionTiming(480)));
       }
     }, { threshold: 0.16, rootMargin: '0px 0px -12px 0px' }) : null;
     groups.forEach(group => observer?.observe(group));
 
-    const disclosureObserver = 'MutationObserver' in window ? new MutationObserver(changes => {
-      if (reduced.matches) return;
-      for (const change of changes) {
-        const tracks = change.target as HTMLElement;
-        if (tracks.hidden || !tracks.classList.contains('project-tracks') || typeof tracks.animate !== 'function') continue;
-        animations.get(tracks)?.cancel();
-        animations.set(tracks, tracks.animate([
-          { opacity: 0.35, transform: 'translateY(-5px)' },
-          { opacity: 1, transform: 'translateY(0)' },
-        ], motionTiming(240)));
-      }
-    }) : null;
-    disclosureObserver?.observe(index, { subtree: true, attributes: true, attributeFilter: ['hidden'] });
-
     return () => {
       observer?.disconnect();
-      disclosureObserver?.disconnect();
+      viewObserver.disconnect();
       clearMotion();
       removers.forEach(remove => remove());
       reduced.removeEventListener('change', onPreference);
       finePointer.removeEventListener('change', onPreference);
       window.removeEventListener('pointermove', schedule);
-      index.removeEventListener('focusin', onDetailFocus);
     };
-  }, [indexRef, project, query, postId, compact, page]);
+  }, [indexRef, project, query, postId, compact]);
 }
