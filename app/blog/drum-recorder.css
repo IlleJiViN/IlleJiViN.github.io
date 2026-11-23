@@ -1,0 +1,107 @@
+.drum-recorder {
+  min-inline-size: 0;
+  margin-block: var(--spacing-4) var(--spacing-6);
+  padding: var(--spacing-4);
+  border: 1px solid var(--line);
+}
+
+.drum-recorder-settings,
+.drum-recorder-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-3);
+  align-items: center;
+}
+
+.drum-recorder-hint,
+.drum-recorder-status {
+  font-size: var(--font-size-sm);
+  color: var(--muted);
+}
+
+.drum-recorder-settings {
+  align-items: end;
+}
+
+.drum-recorder-settings > label {
+  min-inline-size: 0;
+}
+
+.drum-recorder-settings input[type="number"] {
+  inline-size: calc(var(--spacing-12) * 1.5);
+}
+
+.drum-recorder .drum-recorder-metronome {
+  display: flex;
+  align-items: center;
+  min-block-size: var(--spacing-8);
+}
+
+.drum-recorder-metronome input {
+  accent-color: var(--ink);
+  min-block-size: auto;
+}
+
+.drum-recorder-hint {
+  margin-block: var(--spacing-3);
+}
+
+.drum-recorder-status {
+  margin: 0;
+  min-inline-size: 0;
+}
+
+.drum-recorder-pads {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--spacing-2);
+  margin-block: var(--spacing-3);
+}
+
+.drum-recorder-pads .drum-recorder-pad {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: var(--spacing-1);
+  min-block-size: var(--spacing-12);
+  min-inline-size: 0;
+  border: 1px solid var(--line);
+  padding: var(--spacing-2);
+  touch-action: manipulation;
+}
+
+.drum-recorder-pad kbd {
+  display: inline-block;
+  min-inline-size: var(--spacing-5);
+  margin-inline-end: var(--spacing-2);
+  border: 1px solid currentColor;
+  padding-inline: var(--spacing-1);
+  text-align: center;
+  font-size: var(--font-size-sm);
+  font-family: var(--music-number-font);
+  color: inherit;
+}
+
+.drum-recorder-pad b {
+  display: inline-block;
+  white-space: normal;
+  font-size: var(--font-size-sm);
+  font-weight: 400;
+}
+
+.drum-recorder-pads .drum-recorder-pad[data-hit="true"] {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.drum-recorder-pad[data-hit="true"] > *,
+.drum-recorder-actions .astryx-button[data-variant="primary"],
+.drum-recorder-actions .astryx-button[data-variant="primary"] > span {
+  color: var(--paper);
+}
+
+@media (max-width: 30rem) {
+  .drum-recorder-pads {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

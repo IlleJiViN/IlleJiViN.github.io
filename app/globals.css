@@ -9,6 +9,7 @@
 @import "tailwindcss/utilities.css" layer(utilities);
 @import "./blog/tab-score.css";
 @import "./blog/tab-composer.css";
+@import "./blog/drum-recorder.css";
 
 :root {
   color-scheme: light;
@@ -64,6 +65,7 @@ button { color: inherit; }
 .blog-write { padding-block: var(--spacing-2); font-size: var(--font-size-sm); text-underline-offset: .27em; }
 .blog-tab-workspace { max-width: 54rem; margin-inline: auto; }
 .blog-tab-back { margin: 0 0 var(--spacing-4); font-size: var(--font-size-sm); }
+.tab-composer .tab-composer-recording { margin: 0 0 var(--spacing-5); padding: var(--spacing-3); border: 1px solid var(--line); }
 .blog-authored-tab { margin-block: var(--spacing-5); }
 .chapter-authored-tab { margin: 0 var(--spacing-2) var(--spacing-4); }
 .project-heading { margin: 0; font-size: inherit; font-weight: 400; }
