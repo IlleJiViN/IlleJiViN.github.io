@@ -4,7 +4,7 @@ import { useId, useRef, useState } from 'react';
 import { Button } from '@astryxdesign/core/Button';
 import { ToggleButton, ToggleButtonGroup } from '@astryxdesign/core/ToggleButton';
 import TabScore from './TabScore';
-import DrumRecorder from './DrumRecorder';
+import KeyTimingRecorder from './KeyTimingRecorder';
 import {
   DRUM_INSTRUMENTS,
   formatTabScore,
@@ -65,7 +65,6 @@ export default function TabComposer({
   const [instruments, setInstruments] = useState<string[]>([]);
   const [pendingBar, setPendingBar] = useState(false);
   const [copyStatus, setCopyStatus] = useState('');
-  const [showRecorder, setShowRecorder] = useState(false);
   const exportDetails = useRef<HTMLDetailsElement>(null);
   const exportField = useRef<HTMLTextAreaElement>(null);
 
@@ -98,14 +97,6 @@ export default function TabComposer({
     setDraftNotes([]);
     setPendingBar(false);
     setCopyStatus('');
-  }
-
-  function insertRecording(recording: TabScoreData) {
-    if (invalidScore || hasDraft || measureCount + recording.measures.length > TAB_MEASURE_MAX) return false;
-    const joined = [formattedScore, formatTabScore(recording)].filter(Boolean).join(' |\n');
-    if (!parseTabScore(joined)) return false;
-    updateSource(joined);
-    return true;
   }
 
   function addBeat(rest: boolean) {
@@ -146,13 +137,9 @@ export default function TabComposer({
       <header className="tab-composer-heading">
         <h1 id={`${id}-title`}>드럼 악보 쓰기</h1>
       </header>
-      <details className="tab-composer-details tab-composer-recording" onToggle={event => setShowRecorder(event.currentTarget.open)}>
-        <summary>키보드 녹음</summary>
-        {showRecorder && <DrumRecorder
-          maxBars={TAB_MEASURE_MAX - measureCount}
-          disabled={invalidScore || hasDraft}
-          onInsert={insertRecording}
-        />}
+      <details className="tab-composer-details tab-composer-recording">
+        <summary>키보드 입력 간격</summary>
+        <KeyTimingRecorder />
       </details>
       <section className="tab-composer-layout" aria-label="악보 작업 공간">
         <section className="tab-composer-editor" aria-label="악보 입력">

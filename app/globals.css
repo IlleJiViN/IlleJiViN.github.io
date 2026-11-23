@@ -9,7 +9,7 @@
 @import "tailwindcss/utilities.css" layer(utilities);
 @import "./blog/tab-score.css";
 @import "./blog/tab-composer.css";
-@import "./blog/drum-recorder.css";
+@import "./blog/key-timing.css";
 
 :root {
   color-scheme: light;
