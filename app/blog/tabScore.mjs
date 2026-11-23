@@ -1,23 +1,31 @@
-export const TAB_STRINGS = ['e', 'B', 'G', 'D', 'A', 'E'];
+// Each step moves half a staff line spacing down, starting at the top line.
+export const DRUM_INSTRUMENTS = [
+  { id: 'CR', label: '크래시', step: -2, head: 'cross' },
+  { id: 'HH', label: '하이햇', step: -1, head: 'cross' },
+  { id: 'RD', label: '라이드', step: 0, head: 'cross' },
+  { id: 'HT', label: '하이 탐', step: 1, head: 'oval' },
+  { id: 'MT', label: '미드 탐', step: 2, head: 'oval' },
+  { id: 'SD', label: '스네어', step: 3, head: 'oval' },
+  { id: 'FT', label: '플로어 탐', step: 5, head: 'oval' },
+  { id: 'BD', label: '킥', step: 7, head: 'oval' },
+];
+
 export const TAB_DURATIONS = [1, 2, 4, 8, 16];
-export const TAB_FRET_MAX = 24;
 export const TAB_MEASURE_MAX = 8;
 export const TAB_BEAT_MAX = 16;
 export const TAB_MOOD_MAX = 80;
+
+const instrumentIds = new Set(DRUM_INSTRUMENTS.map(instrument => instrument.id));
 
 function parseBeat(token) {
   const match = /^(1|2|4|8|16):(.+)$/.exec(token);
   if (!match) return null;
 
   const duration = Number(match[1]);
-  const notes = {};
-  if (match[2] === 'r') return { duration, notes };
+  if (match[2] === 'r') return { duration, notes: [] };
 
-  for (const note of match[2].split('+')) {
-    const fret = /^([eBGDAE])(\d{1,2})$/.exec(note);
-    if (!fret || Number(fret[2]) > TAB_FRET_MAX || notes[fret[1]] !== undefined) return null;
-    notes[fret[1]] = Number(fret[2]);
-  }
+  const notes = match[2].split('+');
+  if (notes.some(note => !instrumentIds.has(note)) || new Set(notes).size !== notes.length) return null;
 
   return { duration, notes };
 }
@@ -30,7 +38,7 @@ export function parseTabScore(text) {
     source = fenced[2].trim();
   }
 
-  // Accept the opening and closing barlines of a handwritten TAB.
+  // Accept optional opening and closing barlines.
   source = source.replace(/^\||\|$/g, '').trim();
   if (!source) return null;
 

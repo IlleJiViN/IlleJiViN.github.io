@@ -2,18 +2,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { parseTabScore } from '../app/blog/tabScore.mjs';
 
-test('TAB notation keeps chord frets, high and low E, and all rhythmic values', () => {
-  assert.deepEqual(parseTabScore('1:e24+E0 2:r | 4:D10 8:B2 16:G5+A9'), {
+test('drum notation keeps simultaneous hits, cymbals, rests and all rhythmic values', () => {
+  assert.deepEqual(parseTabScore('1:CR+BD 2:r | 4:HH+SD 8:RD+HT 16:MT+FT'), {
     measures: [
-      [{ duration: 1, notes: { e: 24, E: 0 } }, { duration: 2, notes: {} }],
-      [{ duration: 4, notes: { D: 10 } }, { duration: 8, notes: { B: 2 } }, { duration: 16, notes: { G: 5, A: 9 } }],
+      [{ duration: 1, notes: ['CR', 'BD'] }, { duration: 2, notes: [] }],
+      [{ duration: 4, notes: ['HH', 'SD'] }, { duration: 8, notes: ['RD', 'HT'] }, { duration: 16, notes: ['MT', 'FT'] }],
     ],
   });
 });
 
-test('TAB notation rejects malformed notes, repeated strings and empty or oversized bars', () => {
+test('drum notation rejects guitar frets, unknown or repeated instruments and oversized bars', () => {
   const invalidScores = [
-    '', '||', '4:e0 || 4:E0', '32:A3', '4:e25', '4:e0+e1', '4:H2', '4:r+A1', '4:E-1', '4:E0 4:',
+    '', '||', '4:HH || 4:SD', '32:BD', '4:e25', '4:HH+HH', '4:XX', '4:r+BD', '4:HH+', '4:BD 4:',
     Array(17).fill('4:r').join(' '),
     Array(9).fill('4:r').join('|'),
   ];
