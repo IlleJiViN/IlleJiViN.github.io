@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import MusicTheme from './MusicTheme';
 
 export const metadata: Metadata = {
   title: "IlleJiViN — Blog",
@@ -7,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="ko" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('portfolio-theme');document.documentElement.dataset.theme=t==='dark'||t==='light'?t:'dark'}catch(e){document.documentElement.dataset.theme='dark'}})();` }} /></head><body>{children}</body></html>;
+  return <html lang="ko" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('portfolio-theme');document.documentElement.dataset.theme=t==='dark'||t==='light'?t:'dark'}catch(e){document.documentElement.dataset.theme='dark'}try{document.documentElement.dataset.musicMood=localStorage.getItem('blog-music-mood')==='metal'?'metal':'jazz'}catch(e){document.documentElement.dataset.musicMood='jazz'}})();` }} /></head><body><MusicTheme>{children}</MusicTheme></body></html>;
 }

@@ -14,6 +14,8 @@
     "format": "oxfmt"
   },
   "dependencies": {
+    "@astryxdesign/core": "0.7.15",
+    "@astryxdesign/theme-neutral": "0.7.15",
     "@base-ui/react": "1.7.0",
     "@shadcn/react": "0.3.0",
     "class-variance-authority": "0.7.1",
@@ -36,6 +38,7 @@
     "vinext": "1.0.0-beta.5"
   },
   "devDependencies": {
+    "@astryxdesign/cli": "0.7.15",
     "@cloudflare/vite-plugin": "1.37.1",
     "@cloudflare/workers-types": "4.20260515.1",
     "@openai/sites-vite-plugin": "0.2.0",

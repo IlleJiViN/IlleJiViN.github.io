@@ -11,10 +11,19 @@ export default function useProjectMotion(
   query: string,
   postId: number | null,
   compact: boolean,
+  page = 0,
 ) {
   useEffect(() => {
     const index = indexRef.current;
     if (!index) return;
+    const motionTiming = (maximum: number) => {
+      const styles = getComputedStyle(index);
+      const duration = Number.parseFloat(styles.getPropertyValue('--music-motion-duration'));
+      return {
+        duration: Number.isFinite(duration) ? Math.min(maximum, duration) : maximum,
+        easing: styles.getPropertyValue('--music-motion-easing').trim() || 'cubic-bezier(.22,.61,.36,1)',
+      };
+    };
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
     const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
     const groups = [...index.querySelectorAll<HTMLElement>('.project')];
@@ -78,6 +87,11 @@ export default function useProjectMotion(
     reduced.addEventListener('change', onPreference);
     finePointer.addEventListener('change', onPreference);
     window.addEventListener('pointermove', schedule, { passive: true });
+    const onDetailFocus = (event: FocusEvent) => {
+      const tracks = (event.target as HTMLElement).closest<HTMLElement>('.project-tracks');
+      if (tracks) animations.get(tracks)?.cancel();
+    };
+    index.addEventListener('focusin', onDetailFocus);
 
     for (const group of groups) {
       const button = group.querySelector<HTMLElement>('.project-toggle');
@@ -119,7 +133,7 @@ export default function useProjectMotion(
         animations.set(group, group.animate([
           { opacity: 0.55, transform: 'translateY(12px)' },
           { opacity: 1, transform: 'translateY(0)' },
-        ], { duration: 480, easing: 'cubic-bezier(.22,.61,.36,1)' }));
+        ], motionTiming(480)));
       }
     }, { threshold: 0.16, rootMargin: '0px 0px -12px 0px' }) : null;
     groups.forEach(group => observer?.observe(group));
@@ -133,7 +147,7 @@ export default function useProjectMotion(
         animations.set(tracks, tracks.animate([
           { opacity: 0.35, transform: 'translateY(-5px)' },
           { opacity: 1, transform: 'translateY(0)' },
-        ], { duration: 240, easing: 'cubic-bezier(.22,.61,.36,1)' }));
+        ], motionTiming(240)));
       }
     }) : null;
     disclosureObserver?.observe(index, { subtree: true, attributes: true, attributeFilter: ['hidden'] });
@@ -146,6 +160,7 @@ export default function useProjectMotion(
       reduced.removeEventListener('change', onPreference);
       finePointer.removeEventListener('change', onPreference);
       window.removeEventListener('pointermove', schedule);
+      index.removeEventListener('focusin', onDetailFocus);
     };
-  }, [indexRef, project, query, postId, compact]);
+  }, [indexRef, project, query, postId, compact, page]);
 }
