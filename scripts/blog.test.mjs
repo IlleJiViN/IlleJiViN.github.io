@@ -83,6 +83,14 @@ test('mood and difficulty can be published before notation is written', () => {
   assert.deepEqual(post.tab, { score: null, difficulty: 5, mood: '🥁'.repeat(80) });
 });
 
+test('GitHub drum score field publishes tuplets alongside the original article', () => {
+  const body = `${issue.body}\n\n### 드럼 악보\n\n~~~text\n3:2[8:BD 8:r 8:SD] 4:RD\n~~~`;
+  const post = parsePost({ ...issue, body });
+  assert.equal(post.body, parsePost(issue).body);
+  assert.deepEqual(post.tab.score.tuplets, [{ measure: 0, start: 0, length: 3, count: 3, inTimeOf: 2 }]);
+  assert.deepEqual(post.tab.score.measures[0][3], { duration: 4, notes: ['RD'] });
+});
+
 test('legacy TAB metadata is preserved without treating guitar notes as drum hits', () => {
   const legacy = `${issue.body}\n\n### TAB 난이도\n\n3\n\n### TAB 기분\n\n느긋하게\n\n### TAB 악보\n\n4:E0`;
   const post = parsePost({ ...issue, body: legacy });

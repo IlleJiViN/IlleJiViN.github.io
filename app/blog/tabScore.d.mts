@@ -4,7 +4,14 @@ export type TabBeat = {
   duration: TabDuration;
   notes: DrumInstrument[];
 };
-export type TabScoreData = { measures: TabBeat[][] };
+export type TabTuplet = {
+  measure: number;
+  start: number;
+  length: number;
+  count: number;
+  inTimeOf: number;
+};
+export type TabScoreData = { measures: TabBeat[][]; tuplets?: TabTuplet[] };
 export type PostTab = {
   score: TabScoreData | null;
   difficulty: number | null;
@@ -19,6 +26,9 @@ export const DRUM_INSTRUMENTS: readonly {
 }[];
 export const TAB_DURATIONS: readonly TabDuration[];
 export const TAB_MEASURE_MAX: 8;
-export const TAB_BEAT_MAX: 16;
+export const TAB_BEAT_MAX: 128;
+export const TAB_TUPLET_MAX: 64;
+export const TAB_SOURCE_MAX: 32768;
 export const TAB_MOOD_MAX: 80;
 export function parseTabScore(text: string): TabScoreData | null;
+export function formatTabScore(score: TabScoreData | null | undefined): string;

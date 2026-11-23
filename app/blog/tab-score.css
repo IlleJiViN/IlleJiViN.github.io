@@ -49,11 +49,17 @@
 .authored-tab-scroller:focus-visible { outline-offset: -.1rem; }
 
 .drum-staff {
+  --drum-tuplet-room: 0rem;
   position: relative;
   min-inline-size: 100%;
   inline-size: max-content;
-  min-block-size: calc(18 * var(--drum-step));
+  min-block-size: calc(18 * var(--drum-step) + var(--drum-tuplet-room));
   color: var(--tab-mark);
+}
+
+.drum-staff[data-has-tuplets] {
+  --drum-tuplet-room: max(1.55rem, 5 * var(--drum-step));
+  --drum-staff-top: calc(8 * var(--drum-step) + var(--drum-tuplet-room));
 }
 
 .drum-staff-line {
@@ -100,8 +106,39 @@
   position: relative;
   flex: 1 0 var(--spacing-8);
   min-inline-size: var(--spacing-8);
-  min-block-size: calc(18 * var(--drum-step));
+  min-block-size: calc(18 * var(--drum-step) + var(--drum-tuplet-room));
 }
+
+.drum-tuplet {
+  position: relative;
+  flex: 1 0 auto;
+  flex-grow: attr(data-length type(<number>), 1);
+}
+
+.drum-tuplet-bracket {
+  position: absolute;
+  inset-block-start: .25em;
+  inset-inline: calc(var(--spacing-8) / 2 - .16rem);
+  display: flex;
+  align-items: center;
+  gap: .32em;
+  color: var(--tab-mark);
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.drum-tuplet-bracket::before,.drum-tuplet-bracket::after {
+  content: '';
+  flex: 1;
+  block-size: .42em;
+  transform: translateY(.16em);
+  border-block-start: var(--drum-line-weight) solid currentColor;
+}
+
+.drum-tuplet-bracket::before { border-inline-start: var(--drum-line-weight) solid currentColor; }
+.drum-tuplet-bracket::after { border-inline-end: var(--drum-line-weight) solid currentColor; }
 
 .drum-reading {
   position: absolute;

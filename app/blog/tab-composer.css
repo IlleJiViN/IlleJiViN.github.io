@@ -97,6 +97,8 @@
   color: inherit;
 }
 
+.tab-composer-rhythm,
+.tab-composer-ratio,
 .tab-composer-beat,
 .tab-composer-actions {
   display: flex;
@@ -104,6 +106,10 @@
   align-items: end;
   gap: var(--spacing-2);
 }
+
+.tab-composer-ratio,.tab-composer-beat { margin-block-start: var(--spacing-2); }
+.tab-composer-ratio label { flex: 1 1 var(--spacing-12); min-inline-size: 0; }
+.tab-composer-ratio input { inline-size: 100%; }
 
 .tab-composer-notes .tab-composer-measure {
   margin-top: var(--spacing-3);

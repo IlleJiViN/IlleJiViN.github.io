@@ -75,8 +75,8 @@ body:
     id: drum-score
     attributes:
       label: 드럼 악보
-      description: "블로그에서 만든 드럼 악보를 붙여넣으세요. 직접 적을 때는 음 길이:악기 코드를 쓰고, 동시에 치는 악기는 +, 쉼표는 r, 마디는 |로 구분하세요."
-      placeholder: "8:HH+BD 8:HH 4:HH+SD 4:r | 4:CR+BD"
+      description: "블로그에서 만든 드럼 악보를 붙여넣으세요. 직접 적을 때는 음 길이:악기 코드로 적고, 함께 치는 악기는 +, 쉼표는 r, 마디는 |로 구분하세요. 연음은 3:2[8:HH+BD 8:HH 8:HH+SD]처럼 비율과 대괄호로 묶으세요."
+      placeholder: "3:2[8:HH+BD 8:HH 8:HH+SD] 4:r | 4:CR+BD"
       render: text
   - type: textarea
     id: content
