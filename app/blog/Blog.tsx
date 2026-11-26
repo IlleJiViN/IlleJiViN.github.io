@@ -1,6 +1,6 @@
 "use client";
 
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState, type MouseEvent } from 'react';
 import Markdown from 'react-markdown';
 import posts from './posts.json';
 import { projects } from '../projects';
@@ -12,6 +12,7 @@ import type { PostTab } from './tabScore.mjs';
 
 type Post = { id: number; title: string; project: string; order?: number | null; date: string; updated: string; excerpt: string; body: string; url: string; tab?: PostTab };
 type ProjectGroup = { name: string; type: string; summary: string; year: string; posts: Post[] };
+type Reveal = 'project' | 'reader' | { chapterId: number };
 
 const DrumComposer = lazy(() => import('./TabComposer'));
 const PAGE_SIZE = 5;
@@ -45,6 +46,13 @@ function visibleGroups(project: string, query: string) {
   });
 }
 
+function focusAndScroll(anchor: HTMLElement, focus: HTMLElement) {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isClear = document.documentElement.dataset.scoreView === 'clear';
+  focus.focus({ preventScroll: true });
+  anchor.scrollIntoView({ block: 'start', behavior: reduceMotion || isClear ? 'instant' : 'smooth' });
+}
+
 export default function Blog({ compact = false }: { compact?: boolean }) {
   const [project, setProject] = useState('');
   const [query, setQuery] = useState('');
@@ -53,25 +61,32 @@ export default function Blog({ compact = false }: { compact?: boolean }) {
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const indexRef = useRef<HTMLDivElement>(null);
   const detailRef = useRef<HTMLElement>(null);
-  const revealDetail = useRef(false);
+  const readerRef = useRef<HTMLElement>(null);
+  const pendingReveal = useRef<Reveal | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const initialProject = params.get('project') || '';
-    const initialQuery = params.get('q') || '';
+    const initialPostId = Number(params.get('post')) || null;
+    const linkedPost = compact ? undefined : publishedEntries.find(post => post.id === initialPostId);
+    const initialEdit = params.get('tab') === 'edit' && (!initialPostId || Boolean(linkedPost));
+    const initialProject = linkedPost?.project || params.get('project') || '';
+    const initialQuery = linkedPost ? '' : params.get('q') || '';
     setProject(initialProject);
     setQuery(initialQuery);
-    setPostId(Number(params.get('post')) || null);
-    setEditTab(params.get('tab') === 'edit');
+    setPostId(initialPostId);
+    setEditTab(initialEdit);
+    if (linkedPost && !initialEdit) pendingReveal.current = 'reader';
     if (initialProject || initialQuery) {
       const matches = visibleGroups(initialProject, initialQuery);
       setSelectedProject((matches.slice(0, PAGE_SIZE).find(group => group.posts.length > 0) || matches[0])?.name || null);
     }
-  }, []);
+  }, [compact]);
 
   const current = publishedEntries.find(post => post.id === postId);
   const groups = visibleGroups(project, query);
   const navigation = current ? getSeriesNavigation(publishedEntries, current) : null;
+  const previousPost = navigation?.previous;
+  const nextPost = navigation?.next;
   const availableGroups = compact ? groups.slice(0, PAGE_SIZE) : groups;
   const pages = Array.from({ length: Math.ceil(availableGroups.length / PAGE_SIZE) }, (_, page) =>
     availableGroups.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE));
@@ -79,25 +94,34 @@ export default function Blog({ compact = false }: { compact?: boolean }) {
   const selectedGroup = availableGroups.find(group => group.name === selectedProject) || null;
   const selectedFullGroup = selectedGroup ? allGroups.find(group => group.name === selectedGroup.name)! : null;
 
-  useProjectMotion(indexRef, project, query, postId, compact);
+  useProjectMotion(indexRef, project, query, compact);
 
   useEffect(() => {
-    if (!revealDetail.current) return;
-    revealDetail.current = false;
+    const reveal = pendingReveal.current;
+    if (!reveal) return;
     const detail = detailRef.current;
-    if (!selectedProject || !detail || detail.getBoundingClientRect().top < window.innerHeight - 128) return;
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const isClear = document.documentElement.dataset.scoreView === 'clear';
-    detail.scrollIntoView({ block: 'start', behavior: reduceMotion || isClear ? 'instant' : 'smooth' });
-  }, [selectedProject]);
+    const anchor = reveal === 'reader' ? readerRef.current : detail;
+    if (!anchor || anchor.hidden) return;
+    const heading = anchor.querySelector<HTMLElement>('h2');
+    const chapter = typeof reveal === 'object'
+      ? detail?.querySelector<HTMLElement>(`#score-chapter-${reveal.chapterId}`)
+      : null;
+    pendingReveal.current = null;
+    const focus = chapter || heading;
+    if (focus) focusAndScroll(chapter || anchor, focus);
+  }, [selectedProject, postId]);
 
   function updateUrl(nextProject: string, nextQuery: string) {
     const url = new URL(window.location.href);
     nextProject ? url.searchParams.set('project', nextProject) : url.searchParams.delete('project');
     nextQuery ? url.searchParams.set('q', nextQuery) : url.searchParams.delete('q');
-    window.history.replaceState(null, '', url);
+    url.searchParams.delete('post');
+    url.searchParams.delete('tab');
+    window.history.replaceState(window.history.state, '', url);
   }
   function selectFirstMatch(nextProject: string, nextQuery: string) {
+    pendingReveal.current = null;
+    setPostId(null);
     const matches = visibleGroups(nextProject, nextQuery);
     const first = nextProject || nextQuery ? matches.slice(0, PAGE_SIZE).find(group => group.posts.length > 0) || matches[0] : null;
     setSelectedProject(first?.name || null);
@@ -112,9 +136,29 @@ export default function Blog({ compact = false }: { compact?: boolean }) {
     selectFirstMatch(project, value);
     updateUrl(project, value);
   }
-  function toggleGroup(name: string, pointerClick: boolean) {
-    revealDetail.current = pointerClick && selectedProject !== name;
-    setSelectedProject(previous => previous === name ? null : name);
+  function toggleGroup(name: string) {
+    const next = selectedProject === name ? null : name;
+    pendingReveal.current = next ? 'project' : null;
+    setPostId(null);
+    setSelectedProject(next);
+  }
+
+  function readChapter(event: MouseEvent<HTMLAnchorElement>, id: number) {
+    if (compact || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    if (postId === id) {
+      const reader = readerRef.current;
+      const heading = reader?.querySelector('h2');
+      if (reader && heading) focusAndScroll(reader, heading);
+      return;
+    }
+    pendingReveal.current = 'reader';
+    setPostId(id);
+  }
+
+  function closeChapter(id: number) {
+    pendingReveal.current = { chapterId: id };
+    setPostId(null);
   }
 
   if (editTab && !compact && (!postId || current)) {
@@ -135,11 +179,10 @@ export default function Blog({ compact = false }: { compact?: boolean }) {
     );
   }
 
-  if (postId && !compact) {
-    return current ? (
-      <article className="blog-post">
+  const reader = current && !compact && (
+      <article className="blog-post" key={current.id} aria-labelledby="score-post-title">
         <div className="blog-post-actions">
-          <a href={`/blog/?project=${encodeURIComponent(current.project)}`}>← 글 목록</a>
+          <button type="button" className="blog-post-close" onClick={() => closeChapter(current.id)}>← 글 목록</button>
           <nav className="blog-write-actions" aria-label="글 편집">
             <a className="blog-edit" href={`/blog/?post=${current.id}&project=${encodeURIComponent(current.project)}&tab=edit`}>드럼 악보 편집</a>
             <a className="blog-edit" href={`${current.url}/edit`} target="_blank" rel="noreferrer">수정 ↗</a>
@@ -149,7 +192,7 @@ export default function Blog({ compact = false }: { compact?: boolean }) {
           {navigation && !current.tab?.score && <DrumStaffStamp chapter={navigation.position} />}
           <p className="blog-meta">{current.date} · {current.project}{navigation && ` · ${navigation.position} / ${navigation.total}차시`}</p>
         </header>
-        <h1>{current.title}</h1>
+        <h2 className="blog-post-title" id="score-post-title" tabIndex={-1}>{current.title}</h2>
         {current.excerpt && <p className="blog-lead">{current.excerpt}</p>}
         {current.tab && <aside className="blog-authored-tab" aria-label="이 글의 드럼 악보">
           <DrumScore score={current.tab.score} difficulty={current.tab.difficulty} mood={current.tab.mood} />
@@ -162,22 +205,22 @@ export default function Blog({ compact = false }: { compact?: boolean }) {
         </div>
         <a className="blog-source" href={current.url} target="_blank" rel="noreferrer">GitHub 원문 ↗</a>
         {navigation && <nav className="post-pagination" aria-label="같은 프로젝트의 이전·다음 글">
-          {navigation.previous ? <a className="post-pagination-item" rel="prev" href={`/blog/?post=${navigation.previous.id}&project=${encodeURIComponent(current.project)}`}>
+          {previousPost ? <a className="post-pagination-item" rel="prev" href={`/blog/?post=${previousPost.id}&project=${encodeURIComponent(current.project)}`} onClick={event => readChapter(event, previousPost.id)}>
             <span className="post-pagination-label">← 이전 글</span>
-            <span className="post-pagination-title">{navigation.previous.title}</span>
+            <span className="post-pagination-title">{previousPost.title}</span>
           </a> : <span className="post-pagination-item is-disabled"><span className="post-pagination-label">이전 글 없음</span></span>}
-          {navigation.next ? <a className="post-pagination-item post-pagination-next" rel="next" href={`/blog/?post=${navigation.next.id}&project=${encodeURIComponent(current.project)}`}>
+          {nextPost ? <a className="post-pagination-item post-pagination-next" rel="next" href={`/blog/?post=${nextPost.id}&project=${encodeURIComponent(current.project)}`} onClick={event => readChapter(event, nextPost.id)}>
             <span className="post-pagination-label">다음 글 →</span>
-            <span className="post-pagination-title">{navigation.next.title}</span>
+            <span className="post-pagination-title">{nextPost.title}</span>
           </a> : <span className="post-pagination-item post-pagination-next is-disabled"><span className="post-pagination-label">다음 글 없음</span></span>}
         </nav>}
       </article>
-    ) : <div className="blog-empty"><h1>글을 찾을 수 없습니다.</h1><a href="/blog/">목록으로 돌아가기 →</a></div>;
-  }
+  );
 
   return (
     <div className="blog-index" ref={indexRef}>
       <div className="blog-index-heading"><h1>Projects</h1></div>
+      {postId && !current && !compact ? <p className="blog-empty" role="status">글을 찾을 수 없습니다.</p> : null}
       <div className="blog-toolbar">
         {!compact && <>
           <label>프로젝트<select value={project} onChange={event => filterProject(event.target.value)}><option value="">전체 프로젝트</option>{allGroups.map(group => <option key={group.name}>{group.name}</option>)}</select></label>
@@ -218,7 +261,7 @@ export default function Blog({ compact = false }: { compact?: boolean }) {
                           className="project-toggle"
                           aria-expanded={selectedGroup?.name === group.name}
                           aria-controls="score-project-detail"
-                          onClick={event => toggleGroup(group.name, event.detail > 0)}>
+                          onClick={() => toggleGroup(group.name)}>
                           <span className="project-cover" aria-hidden="true" />
                           <span className="project-copy">
                             <span className="project-name-line">
@@ -240,14 +283,15 @@ export default function Blog({ compact = false }: { compact?: boolean }) {
           <section className="score-detail" ref={detailRef} id="score-project-detail" aria-labelledby="score-detail-heading" hidden={!selectedGroup}>
             {selectedGroup && <article className="tab-project" key={selectedGroup.name}>
               <header className="tab-project-heading">
-                <h2 id="score-detail-heading">{selectedGroup.name}</h2>
+                <h2 id="score-detail-heading" tabIndex={-1}>{selectedGroup.name}</h2>
                 {selectedGroup.summary && <p className="project-description">{selectedGroup.summary}</p>}
               </header>
               {selectedGroup.posts.length > 0 ? <ol className="tab-chapters">
                 {selectedGroup.posts.map(post => {
                   const chapter = selectedFullGroup!.posts.findIndex(item => item.id === post.id) + 1;
                   return <li key={post.id}>
-                    <a className="track-row" href={`/blog/?post=${post.id}&project=${encodeURIComponent(selectedGroup.name)}`}>
+                    <a className="track-row" id={`score-chapter-${post.id}`} href={`/blog/?post=${post.id}&project=${encodeURIComponent(selectedGroup.name)}`}
+                      aria-current={current?.id === post.id ? 'true' : undefined} onClick={event => readChapter(event, post.id)}>
                       <DrumStaffStamp chapter={chapter} />
                       <span className="track-copy">
                         <span className="track-chapter">{chapter}차시</span>
@@ -265,10 +309,13 @@ export default function Blog({ compact = false }: { compact?: boolean }) {
                 <DrumStaffStamp chapter={0} />
                 <p className="project-empty">공개된 글이 없습니다.</p>
               </>}
+              {!compact && <section className="inline-reader" ref={readerRef} aria-label="글 읽기" hidden={!reader}>
+                {reader}
+              </section>}
             </article>}
           </section>
         </section>
-      ) : <div className="blog-empty"><p>{query ? '검색 결과가 없습니다.' : '공개된 프로젝트가 없습니다.'}</p><button type="button" className="blog-reset" onClick={() => { setProject(''); setQuery(''); setSelectedProject(null); updateUrl('', ''); }}>전체 보기</button></div>}
+      ) : <div className="blog-empty"><p>{query ? '검색 결과가 없습니다.' : '공개된 프로젝트가 없습니다.'}</p><button type="button" className="blog-reset" onClick={() => { setProject(''); setQuery(''); selectFirstMatch('', ''); updateUrl('', ''); }}>전체 보기</button></div>}
       {!compact && <details className="blog-help"><summary>글과 사진 올리는 방법</summary><ol><li>글쓰기를 누르고 GitHub에 로그인합니다.</li><li>제목·프로젝트·본문을 작성하고, 사진을 본문에 끌어넣거나 붙여넣습니다.</li><li>차시 순서에 양의 정수를 넣으면 같은 프로젝트 안에서 작은 숫자부터 정렬됩니다. 비워둔 글은 번호 있는 글 뒤에 작성일 순서로 표시됩니다. 같은 번호는 작성일·글 번호 순서로 정렬됩니다.</li><li>blog 라벨이 붙은 상태로 등록하면 배포 후 공개됩니다.</li><li>글 상세의 수정 버튼으로 GitHub에서 내용을 고칠 수 있습니다. 비공개 전환은 blog 라벨 제거 또는 글 닫기로 처리합니다.</li></ol><p>소유자 IlleJiViN의 글만 사이트에 표시됩니다. 초안은 blog 라벨 없이 저장하세요.</p></details>}
     </div>
   );

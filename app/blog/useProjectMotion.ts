@@ -9,7 +9,6 @@ export default function useProjectMotion(
   indexRef: RefObject<HTMLDivElement | null>,
   project: string,
   query: string,
-  postId: number | null,
   compact: boolean,
 ) {
   useEffect(() => {
@@ -29,6 +28,8 @@ export default function useProjectMotion(
     const animations = new Map<HTMLElement, Animation>();
     const removers: Array<() => void> = [];
     let activeRow: Row | null = null;
+    let activeSlide: HTMLElement | null = null;
+    let pointedSlide: HTMLElement | null = null;
     let pointerX = 0;
     let pointerY = 0;
     let frame = 0;
@@ -37,13 +38,23 @@ export default function useProjectMotion(
       row.group.removeAttribute('data-pointer-active');
       for (const name of ['--row-x', '--row-y']) row.button.style.removeProperty(name);
       for (const name of ['--rotate-x', '--rotate-y']) row.cover.style.removeProperty(name);
+      row.group.style.removeProperty('--staff-line-drift');
       for (const name of ['--magnet-x', '--magnet-y']) row.chevron?.style.removeProperty(name);
+    };
+    const resetSlide = () => {
+      if (!activeSlide) return;
+      activeSlide.removeAttribute('data-staff-tracking');
+      activeSlide.style.removeProperty('--staff-light-x');
+      activeSlide.style.removeProperty('--staff-light-y');
+      activeSlide = null;
     };
     const clearMotion = () => {
       animations.forEach(animation => animation.cancel());
       animations.clear();
       if (activeRow) resetRow(activeRow);
       activeRow = null;
+      resetSlide();
+      pointedSlide = null;
       window.cancelAnimationFrame(frame);
       frame = 0;
       document.documentElement.style.removeProperty('--pointer-x');
@@ -55,14 +66,26 @@ export default function useProjectMotion(
       frame = 0;
       if (!canTrack()) return;
       const row = activeRow;
+      const slide = pointedSlide?.closest('[data-dragging]') ? null : pointedSlide;
       // Read geometry before writing styles so one frame needs at most one layout.
+      const paper = slide?.getBoundingClientRect();
       const rect = row?.button.getBoundingClientRect();
       const chevron = row?.chevron?.getBoundingClientRect();
+      if (activeSlide !== slide) resetSlide();
+      if (slide && paper?.width && paper.height) {
+        const x = 100 * clamp((pointerX - paper.left) / paper.width, 0, 1);
+        const y = 100 * clamp((pointerY - paper.top) / paper.height, 0, 1);
+        slide.style.setProperty('--staff-light-x', `${x.toFixed(1)}%`);
+        slide.style.setProperty('--staff-light-y', `${y.toFixed(1)}%`);
+        slide.setAttribute('data-staff-tracking', '');
+        activeSlide = slide;
+      }
       document.documentElement.style.setProperty('--pointer-x', `${pointerX}px`);
       document.documentElement.style.setProperty('--pointer-y', `${pointerY + window.scrollY}px`);
-      if (!row || !rect || !rect.width || !rect.height) return;
+      if (!row || !slide?.contains(row.group) || !rect?.width || !rect.height) return;
       const x = clamp((pointerX - rect.left) / rect.width, 0, 1);
       const y = clamp((pointerY - rect.top) / rect.height, 0, 1);
+      row.group.style.setProperty('--staff-line-drift', `${((y - 0.5) * 0.26).toFixed(3)}rem`);
       row.button.style.setProperty('--row-x', `${pointerX - rect.left}px`);
       row.button.style.setProperty('--row-y', `${pointerY - rect.top}px`);
       row.cover.style.setProperty('--rotate-x', `${((0.5 - y) * 12).toFixed(2)}deg`);
@@ -79,6 +102,8 @@ export default function useProjectMotion(
       if (!canTrack() || event.pointerType !== 'mouse') return;
       pointerX = event.clientX;
       pointerY = event.clientY;
+      const slide = event.target instanceof Element ? event.target.closest<HTMLElement>('.score-slide') : null;
+      pointedSlide = index.contains(slide) ? slide : null;
       if (!frame) frame = window.requestAnimationFrame(drawPointer);
     };
     const onPreference = () => { if (!canTrack()) clearMotion(); };
@@ -141,5 +166,5 @@ export default function useProjectMotion(
       finePointer.removeEventListener('change', onPreference);
       window.removeEventListener('pointermove', schedule);
     };
-  }, [indexRef, project, query, postId, compact]);
+  }, [indexRef, project, query, compact]);
 }
