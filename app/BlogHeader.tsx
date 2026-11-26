@@ -1,5 +1,4 @@
 import ThemeToggle from './ThemeToggle';
-import MusicMood from './MusicMood';
 import ScoreView from './ScoreView';
 
 export default function BlogHeader() {
@@ -7,7 +6,6 @@ export default function BlogHeader() {
     <header className="blog-header">
       <a className="brand" href="/" aria-label="블로그 홈">ILLEJIVIN.LOG</a>
       <section className="header-preferences" aria-label="화면 설정">
-        <MusicMood />
         <ScoreView />
       </section>
       <nav className="header-actions" aria-label="사이트 설정과 링크">

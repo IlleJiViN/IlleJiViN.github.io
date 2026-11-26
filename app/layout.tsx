@@ -12,11 +12,9 @@ const readAppearancePreferences = `
     const root = document.documentElement;
     try {
       root.dataset.theme = localStorage.getItem('portfolio-theme') === 'light' ? 'light' : 'dark';
-      root.dataset.musicMood = localStorage.getItem('blog-music-mood') === 'metal' ? 'metal' : 'jazz';
       root.dataset.scoreView = localStorage.getItem('blog-score-view') === 'clear' ? 'clear' : 'expressive';
     } catch {
       root.dataset.theme = 'dark';
-      root.dataset.musicMood = 'jazz';
       root.dataset.scoreView = 'expressive';
     }
   })();
